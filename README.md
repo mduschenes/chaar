@@ -2,21 +2,21 @@
 Exact calculations of Haar and cHaar twirl quantities using sympy and haarpy.
 
 ## matrix
-- Compute <t>-order <k>-concatenated, arbitrary $d_{\mathcal{H}},d_{\mathcal{E}}$-dimensional cHaar twirl permutation and cycle operator coefficients $\tau_{d_{\mathcal{H}}d_{\mathcal{E}}}^{(t)}(\sigma,\pi) \to \tau_{d_{\mathcal{H}}d_{\mathcal{E}}}^{(t)}(P,S)$ exactly using sympy and haarpy.
+- Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=$d^{`n`}-dimensional cHaar twirl permutation and localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}(\sigma,\pi) \to \tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ using sympy and haarpy.
 ```python
 	./main.py <path> <t>
 	./plot.py <path> <t> <k> <n>
 ```
 
 ## basis
-- Compute <t>-order $<d>$-dimensional localized permutation basis change of basis matrix using sympy.
+- Compute `t`-order `d`-dimensional localized permutation basis change of basis matrix $\phi_{d}^{(t)}(\sigma,\pi)$ using sympy.
 ```python
 	./main.py <path> <t> <d>
 	./plot.py <path> <t> <d>
 ```
 
 ## norm
-- Compute <t>-order, various $d_{\mathcal{H}},d_{\mathcal{E}}$-dimensional cHaar twirl norm relative to Haar, Depolarize twirl norms exactly using sympy and numpy linear algebra.
+- Compute `t`-order, various $d,d_{\mathcal{E}}$-dimensional cHaar twirl norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ relative to Haar, Depolarize twirl norms exactly using sympy and numpy linear algebra.
 ```python
 	./main.py settings.json
 ```
