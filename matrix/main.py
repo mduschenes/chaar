@@ -161,7 +161,7 @@ def sorting(x,X,t):
 	if not common(support(x,t),support(X,t),t):
 		return False
 	order = support(X,t)
-	cycle = ordering(x,t,orders=lambda i:order.index(min(i)))
+	cycle = ordering(x,t,order=min,orders=lambda i:order.index(min(i)))
 	length = len(cycle)
 	for k in product(*(range(len(cycle[i])) for i in range(length))):
 		index = [order.index(j) for i in range(length) for j in [*cycle[i][k[i]:],*cycle[i][:k[i]]]]
@@ -172,8 +172,8 @@ def sorting(x,X,t):
 def contains(x,X,t):
 	return ((size(~x*X,t) == (size(X,t)-size(x,t))) and (size(X,t) >= size(x,t)))
 
-def sub(x,X,t):
-	return contains(x,X,t) and sorting(x,X,t)
+def conditions(x,X,t):
+	return contains(x,X,t)# and sorting(x,X,t)
 
 def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
@@ -201,7 +201,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 		for j in range(g):
 			for k in [True,False]:
 				commons[i,j,k] = common(supports[G[j]],supports[G[i]],t,equals=k)
-			index[i,j] = sub(G[j],G[i],t)
+			index[i,j] = conditions(G[j],G[i],t)
 			indices.append((i,j))
 			elements.append((i,j))
 

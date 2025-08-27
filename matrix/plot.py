@@ -53,7 +53,7 @@ def order(G,t):
 	g = len(G)
 	partitions = {}
 	for i in range(g):
-		p = tuple(set((k for j in cycles(G[i],t) for k in j)))
+		p = tuple(set(flatten(cycles(G[i],t))))
 		if p not in partitions:
 			partitions[p] = []
 
@@ -148,11 +148,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	indices = sort(elements,t)
 	elements = generate(elements,t)
 	elements = [elements[i] for i in indices]
-
 	indices = order(elements,t)
-
-	index = None
-	unique = None
 
 	def process(data,unique=None,index=None,indices=None):
 		
@@ -160,6 +156,8 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 		e = Symbol('e')
 
 		options = dict(substitutions={e:d**n})
+
+		data = data
 
 		if unique is not None:
 			return data,unique
@@ -186,7 +184,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 				data[i,j] = number(data[i,j],**options)
 			elif data[i,j] in [1]:
 				data[i,j] = 0
-			else:
+			elif data[i,j] in [0]:
 				data[i,j] = -1
 		
 			if checkpoint:
@@ -206,8 +204,16 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
 	
 	if checkpoint:
+		
 		tmp = load(checkpoint)
-		if tmp is not None:
+		
+		if boolean or tmp is None:
+			
+			index = None
+			data = data
+			unique = None
+
+		else:
 
 			if all(attr in tmp for attr in ['data','unique']):
 
@@ -254,6 +260,13 @@ def exists(path):
 		return os.path.exists(path)
 	except:
 		return False
+
+def flatten(i):
+	if isinstance(i,(list,dict,tuple)):
+		for j in i:
+			yield from flatten(j)
+	else:
+		yield i
 
 def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 

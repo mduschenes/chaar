@@ -240,12 +240,11 @@ def sorting(x,X,t):
 def contains(x,X,t):
 	return ((size(~x*X,t) == (size(X,t)-size(x,t))) and (size(X,t) >= size(x,t)))
 
-def sub(x,X,t):
-	return contains(x,X,t) #and sorting(x,X,t)
-
 def conditions(string):
 	length = len(string)
 	return all(string[i] not in [0,string[(i-1)%(length)]*(i>0)] for i in range(length))
+	# return all(string[i] not in [0,*string[:i]] for i in range(length))
+	return all(string[i] not in [0,*string[:i],*[string[i+1:]]] for i in range(length))
 
 def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
@@ -253,9 +252,8 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 	g = len(G)
 
 	path = '%s/data.%d.%d.pkl'%(path,t,d)
-	parse = lambda obj: obj.real.round()+0. if isinstance(obj,arrays) and not obj.dtype == int else str(obj) if not isinstance(obj,str) else obj
+	parse = lambda obj: obj.real.round(8)+0. if isinstance(obj,arrays) and not obj.dtype == int else str(obj) if not isinstance(obj,str) else obj
 	disp = lambda *objs,verbose=True: log(*(parse(obj) for obj in objs),verbose=verbose)
-	eps = 1e-14
 	dtype = 'complex'
 
 	data = [zeros((d,d),dtype=dtype) for i in range(2)]
@@ -272,63 +270,52 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 	one = lambda t=1: tensor([identity(d)]*t)
 	zero = lambda t=1: tensor([zeros((d,d),dtype=dtype)]*t)
 
-	if boolean or not exists(path):
+	partitions = classes(t)
+
+	objs = {
+		't':t,'d':d,
+		'strings.localized': {},
+		'strings.permutations': {},
+		'basis.localized': zeros((g,d**t,d**t),dtype=dtype),
+		'basis.permutations': zeros((g,d**t,d**t),dtype=dtype),
+		}
+
+	for l in range(2,t+1):
+
+		objs['strings.localized'][l] = zero(l)
+		objs['strings.permutations'][l] = zero(l)
+
+		for index,string in enumerate(product(data,repeat=l-1)):
+
+			obj = tensor([datas[(string[(i-1)%(l-1)]*(i>0),string[(i)%(l-1)]*(i<(l-1)))] for i in range(l)])
+
+			if conditions(string):
+				objs['strings.localized'][l] += obj
+
+			objs['strings.permutations'][l] += obj
+
+			if verbose and index % d**(l//2) == 0:
+				log(string,verbose=verbose)
+
+	for partition in partitions:
 		
-		partitions = classes(t)
-
-		objs = {
-			't':t,'d':d,
-			'strings.localized': {},
-			'strings.permutations': {},
-			'basis.localized': zeros((g,d**t,d**t),dtype=dtype),
-			'basis.permutations': zeros((g,d**t,d**t),dtype=dtype),
-			'data': zeros((g,g),dtype=dtype),
-			}
-
-		for l in range(2,t+1):
-
-			objs['strings.localized'][l] = zero(l)
-			objs['strings.permutations'][l] = zero(l)
-
-			for index,string in enumerate(product(data,repeat=l-1)):
-
-				obj = tensor([datas[(string[(i-1)%(l-1)]*(i>0),string[(i)%(l-1)]*(i<(l-1)))] for i in range(l)])
-
-				if conditions(string):
-					objs['strings.localized'][l] += obj
-
-				objs['strings.permutations'][l] += obj
-
-				if verbose and index % d**(l//2) == 0:
-					log(string,verbose=verbose)
-
-		for partition in partitions:
-			
-			l = sum(partition)
-			obj = tensor([*[objs['strings.localized'][i] for i in partition],*[datas[0]]*(t-l)])
-			_obj = tensor([*[objs['strings.permutations'][i] for i in partition],*[datas[0]]*(t-l)])
-			
-			for i in partitions[partition]:
-				j = list(flatten(cycles(G[i],t)))
-				objs['basis.localized'][i] = shuffle(obj,j,d,t)
-				objs['basis.permutations'][i] = shuffle(_obj,j,d,t)
-	
-		dump(path,objs)				
-
-	else:
-
-		objs = load(path)
+		l = sum(partition)
+		obj = tensor([*[objs['strings.localized'][i] for i in partition],*[datas[0]]*(t-l)])
+		_obj = tensor([*[objs['strings.permutations'][i] for i in partition],*[datas[0]]*(t-l)])
+		
+		for i in partitions[partition]:
+			j = list(flatten(cycles(G[i],t)))
+			objs['basis.localized'][i] = shuffle(obj,j,d,t)
+			objs['basis.permutations'][i] = shuffle(_obj,j,d,t)
 
 	X = inner(objs['basis.localized'],objs['basis.localized'])
 	x = inner(objs['basis.localized'],objs['basis.permutations'])
 
-	objs['data'] = transpose(solve(X,x))
+	data = transpose(solve(X,x))
 
-	objs['data'] = astype(real(objs['data']).round(),int)	
+	dump(path,data)
 
-	dump(path,objs)
-
-	disp(objs['data'])
+	disp(data)
 
 	return 
 

@@ -73,6 +73,11 @@ def order(G,t):
 	return indices
 
 def number(expression,**kwargs):
+	eps = max(1e-8,np.finfo(expression.dtype).eps)
+	expression = np.real(expression)
+	expression = 0 if np.isnan(expression) | np.isinf(expression) else expression
+	expression = -1 if np.abs(expression) <= eps else expression
+	expression = int(expression)
 	return expression
 
 def process(data,checkpoint,t,d,boolean=None,verbose=None):
@@ -87,15 +92,13 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 	indices = sort(elements,t)
 	elements = generate(elements,t)
 	elements = [elements[i] for i in indices]
-
 	indices = order(elements,t)
-
-	index = None
-	unique = None
 
 	def process(data,unique=None,index=None,indices=None):
 		
 		options = {}
+
+		data = np.real(data)
 
 		if unique is not None:
 			return data,unique
@@ -118,7 +121,7 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 				data[i,j] = number(data[i,j],**options)
 			elif data[i,j] in [1]:
 				data[i,j] = 0
-			else:
+			elif data[i,j] in [0]:
 				data[i,j] = -1
 		
 			if checkpoint:
@@ -127,7 +130,7 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 
 			# log(i,j,data[i,j],verbose=verbose)
 
-		data = np.array(data).astype(int)
+		data = np.array(data).real.astype(int)
 
 		unique = np.unique(data[data>=0])
 
@@ -138,8 +141,16 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 
 	
 	if checkpoint:
+		
 		tmp = load(checkpoint)
-		if tmp is not None:
+
+		if boolean or tmp is None:
+			
+			index = None
+			data = data
+			unique = None
+
+		else:
 
 			if all(attr in tmp for attr in ['data','unique']):
 
@@ -199,10 +210,7 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 	if data is None:
 		return
 
-	key = 'data'
-	data = data[key]
-
-	log(key,t,d,verbose=verbose)
+	log(t,d,verbose=verbose)
 
 	data,unique = process(data,checkpoint,t=t,d=d,boolean=boolean,verbose=verbose,**kwargs)
 
