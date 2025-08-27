@@ -1,0 +1,4 @@
+makefile
+**/scratch
+test/**
+tmp/**
