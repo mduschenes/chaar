@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Environment
 env=${1:-env}
 requirements=${2:-requirements.txt}
 architecture=${3:-cpu}
 envs=${4:-${HOME}/envs}
+test=${5:-test.py}
 
 # Load modules
 case ${architecture} in
@@ -45,7 +46,6 @@ options+=(-r ${requirements})
 pip install ${options[@]}
 
 # Test environment
-test=test.py
 if [[ -f ${test} ]]
 then
 	options=(-rA -W ignore::DeprecationWarning)

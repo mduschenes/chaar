@@ -3,5 +3,3 @@ sympy
 haarpy
 matplotlib
 joblib
-json
-pickle
