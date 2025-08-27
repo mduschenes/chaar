@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 # Environment
-env=${1:-env}
+env=${1:-chaar}
 requirements=${2:-requirements.txt}
-architecture=${3:-cpu}
-envs=${4:-${HOME}/envs}
-test=${5:-test.py}
+packages=(${3:-haarpy})
+system=${4:-cpu}
+envs=${5:-${HOME}/envs}
+test=${6:-test.py}
 
 # Load modules
-case ${architecture} in
+case ${system} in
 	cpu)
 		modules=(python)
 	;;
@@ -32,18 +33,20 @@ if [[ ! ${dir} == . ]];then envs=${dir};fi
 mkdir -p ${envs}
 deactivate &>/dev/null 2>&1
 rm -rf ${envs}/${env}
-pip install --upgrade pip --no-index
 virtualenv --no-download ${envs}/${env}
+
 
 # Activate environment
 source ${envs}/${env}/bin/activate
 
-# Install environment
-options=()
-options+=(--no-index)
-options+=(-r ${requirements})
 
+# Install environment
+options=(--no-index $(grep -ivE "${packages[@]}" ${requirements}))
 pip install ${options[@]}
+
+options=(${packages[@]})
+pip install ${options[@]}
+
 
 # Test environment
 if [[ -f ${test} ]]

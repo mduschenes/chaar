@@ -2,8 +2,8 @@
 
 #SBATCH --account=def-raymond
 #SBATCH --job-name=basis
-#SBATCH --output=scratch/lanl/basis/%x.%A.stdout
-#SBATCH --error=scratch/lanl/basis/%x.%A.stderr
+#SBATCH --output=scratch/chaar/basis/%x.%A.stdout
+#SBATCH --error=scratch/chaar/basis/%x.%A.stderr
 
 ##SBATCH --partition=cpu
 #SBATCH --time=12:00:00
@@ -28,7 +28,7 @@ requeue()
 
 
 # Environment
-env=lanl
+env=chaar
 modules=()
 
 module purge &>/dev/null 2>&1
@@ -40,7 +40,7 @@ source ${HOME}/envs/${env}/bin/activate &>/dev/null 2>&1
 # Program
 
 exe=./main.py
-path=scratch/lanl/basis
+path=scratch/chaar/basis
 simulations=(${simulations:-"t.d"})
 t=${t}
 d=${d}

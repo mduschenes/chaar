@@ -2,8 +2,8 @@
 
 #SBATCH --account=def-raymond
 #SBATCH --job-name=matrix
-#SBATCH --output=scratch/lanl/matrix/%x.%A.stdout
-#SBATCH --error=scratch/lanl/matrix/%x.%A.stderr
+#SBATCH --output=scratch/chaar/matrix/%x.%A.stdout
+#SBATCH --error=scratch/chaar/matrix/%x.%A.stderr
 
 ##SBATCH --partition=cpu
 #SBATCH --time=12:00:00
@@ -28,7 +28,7 @@ requeue()
 
 
 # Environment
-env=lanl
+env=chaar
 modules=()
 
 module purge &>/dev/null 2>&1
@@ -39,7 +39,7 @@ source ${HOME}/envs/${env}/bin/activate &>/dev/null 2>&1
 
 # Program
 
-path=scratch/lanl/matrix
+path=scratch/chaar/matrix
 data=
 simulations=(${simulations:-${@:-"t.k.n"}})
 t=(${t})
