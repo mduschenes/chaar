@@ -121,22 +121,10 @@ def weingarten(x,y,d,t,local=False,supports={}):
 	if local:
 		a,b,c = supports[x],supports[y],supports[z]
 		z = Permutation([[c.index(j) for j in i] for i in cycles(z,t)])
-		t = max(len(a),len(b))
+		t = max(len(a),len(b),len(c))
 	if t == 0:
 		return 1
 	return weingarten_element(z,t,d)*(d**t)
-
-def sort(G,t):
-	G = generate(G,t)
-	g = len(G)
-	key = lambda i: (
-			size(G[i],t),
-			len(cycles(G[i],t)),
-			*(len(j) for j in cycles(G[i],t)),
-			tuple(((tuple(j) for j in cycles(G[i],t))))
-			)
-	indices = list(sorted(range(g),key=key))
-	return indices
 
 def sort(G,t):
 	G = generate(G,t)
@@ -146,51 +134,20 @@ def sort(G,t):
 
 	def key(i):
 		cycle = ordering(G[i],t)
+		indices = list(set(flatten(cycle)))
+		number = len(indices)
 		length = size(G[i],t)
 		key = (
-			tuple(tuple(j) for j in cycle),
-			*(len(j) for j in cycle),
-			len(list(flatten(cycle))),
+			number,
 			length,
-			len(cycle),
+			*(len(j) for j in cycle),
+			tuple(indices),
 			)
 		return key
-	# key = lambda i: (
-	# 		len(list(flatten(cycles(G[i],t)))),
-	# 		size(G[i],t),
-	# 		len(cycles(G[i],t)),
-	# 		*(len(j) for j in ordering(G[i],t)),
-	# 		tuple(((tuple(j) for j in ordering(G[i],t))))
-	# 		)
-	indices = list(sorted(indices,key=key))
 	
-	# partitions = {}
-	# for i in indices:
-	# 	partition = tuple(set(flatten(cycles(G[i],t))))
-	# 	if partition not in partitions:
-	# 		partitions[partition] = []
-	# 	partitions[partition].append(i)
-	# key = lambda i: (len(i),*i)
-	# indices = list(sorted(partitions,key=key))
-	# partitions = {i: partitions[i] for i in indices}
-	# indices = [j for i in partitions for j in partitions[i]]	
+	indices = sorted(indices,key=key)
 	
-	# key = lambda i: (
-	# 	size(G[i],t),
-	# 	len(cycles(G[i],t)),
-	# 	*(len(j) for j in cycles(G[i],t)),
-	# 	tuple(((tuple(j) for j in cycles(G[i],t))))
-	# 	)
-	# indices = list(sorted(indices,key=key))
-
 	return indices
-
-def common(support,supports,t,equals=False):
-	return (
-		all(k in supports for k in support) and
-		((equals and (len(supports)==len(support))) or 
-		 (not equals and (len(supports)>=len(support))))
-		)
 
 def ordering(x,t,order=min,orders=min):
 	x = cycles(x,t)
@@ -210,6 +167,13 @@ def sorting(x,X,t):
 			return True
 	return False
 
+def common(support,supports,t,equals=False):
+	return (
+		all(k in supports for k in support) and
+		((equals and (len(supports)==len(support))) or 
+		 (not equals and (len(supports)>=len(support))))
+		)
+
 def contains(x,X,t):
 	return ((size(~x*X,t) == (size(X,t)-size(x,t))) and (size(X,t) >= size(x,t)))
 
@@ -220,10 +184,6 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 	G = group(t,sorting=True)
 	g = len(G)
-
-	for i in range(g):
-		print(f"{i:^{2 if g<=100 else 3}}",cycles(G[i],t))#,[cycles(G[j],t) for j in range(g) if contains(G[j],G[i],t)])
-	exit()
 
 	path = '%s/data.%d.pkl'%(path,t)
 
@@ -236,6 +196,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 	supports = {}
 	commons = {}
 	index = {}
+	values = {'data':{},'basis':{}}
 	indices = []
 	elements = []
 
@@ -247,6 +208,18 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 			for k in [True,False]:
 				commons[i,j,k] = common(supports[G[j]],supports[G[i]],t,equals=k)
 			index[i,j] = conditions(G[j],G[i],t)
+			
+			values['data'][i,j] = (
+					gram(G[0],G[i],e,t,local=local,supports=supports)*
+					weingarten(G[i],G[j],e,t,local=local,supports=supports)*
+					gram(G[j],G[0],d,t,local=local,supports=supports)
+					)
+			values['basis'][i,j] = (
+					(gram(G[i],G[j],d,t))/
+				   ((gram(G[0],G[i],d,t))*
+					(gram(G[0],G[j],d,t)))
+					) if commons[i,j,True] else 0
+			
 			indices.append((i,j))
 			elements.append((i,j))
 
@@ -254,50 +227,38 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 	if boolean or data is None:
 		i,j = 0,0
-		data = {attr: Matrix([[0 for j in range(g)] for i in range(g)]) for attr in ['data','basis']}
+		data = {attr: Matrix([[0 for j in range(g)] for i in range(g)]) for attr in values}
 	else:
 		i,j = list(data.keys())[-1]
 		data = list(data.values())[-1]
 
-	indices = indices[indices.index((i,j))-((i*j)>0):]
+	indices = indices[indices.index((i,j)):]
 	elements = elements[:]
-	tmp = {attr:0 for attr in data}
 
 	for i,j in indices:
 
-		tmp['data'] = 0
-	
-		tmp['basis'] = ((gram(G[i],G[j],d,t))/
-					   ((gram(G[0],G[i],d,t))*
-					    (gram(G[0],G[j],d,t)))
-					   ) if commons[i,j,True] else 0
-
 		if orthogonal and not commons[i,j,equals]:
 			continue
+
+		data['data'][i,j] = 0
+	
+		data['basis'][i,j] = values['basis'][i,j]
 
 		for k,l in elements:
 
 			if ((index[k,i] and index[l,j]) and ((not local) or (commons[i,k,False] and commons[i,l,False]))):
 
-				tmp['data'] += (
-					gram(G[0],G[k],e,t,local=local,supports=supports)*
-					weingarten(G[k],G[l],e,t,local=local,supports=supports)*
-					gram(G[l],G[0],d,t,local=local,supports=supports)
-					)
+				data['data'][i,j] += values['data'][k,l]
 
-			if commons[i,j,True] and (index[i,k] and index[j,l]) and (k != i) and (l != j):
+			if commons[i,j,True] and (index[i,k] and index[j,l]) and ((k != i)  or (l != j)):
 				
-				tmp['basis'] -= data['basis'][k,l]
+				data['basis'][i,j] -= data['basis'][k,l]
 
-		tmp['data'] = simplify(tmp['data'])
+		data['data'][i,j] = simplify(data['data'][i,j])
 
-		tmp['basis'] = simplify(tmp['basis'])
+		data['basis'][i,j] = simplify(data['basis'][i,j])
 
-		tmp['data'] = tmp['data'].subs(e,z)
-
-		data['data'][i,j] = tmp['data']
-
-		data['basis'][i,j] = tmp['basis']
+		data['data'][i,j] = data['data'][i,j].subs(e,z)
 
 		log(i,j,*(data[attr][i,j] for attr in data),verbose=verbose)
 

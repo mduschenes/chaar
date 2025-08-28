@@ -27,8 +27,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,format='%(message)s',stream=sys.stdout)
-log = lambda *message,**kwargs: logger.info('\t'.join(str(i) for i in message) if len(message)>1 else message[0] if len(message)>0 else "")
-np.set_printoptions(linewidth=1000)
+log = lambda *message,verbose=True,**kwargs: logger.info('\t'.join(str(i) for i in message) if len(message)>1 else message[0] if len(message)>0 else "") if verbose else None
 
 class Function(object):
 	def __init__(self,func,*args,**kwargs):

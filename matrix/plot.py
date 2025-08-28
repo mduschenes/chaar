@@ -18,7 +18,6 @@ import logging
 logger = logging.getLogger(__name__)	
 logging.basicConfig(level=logging.INFO,format='%(message)s',stream=sys.stdout)
 log = lambda *message,verbose=True,**kwargs: logger.info('\t'.join(str(i) for i in message) if len(message)>1 else message[0] if len(message)>0 else "") if verbose else None
-np.set_printoptions(linewidth=1000)
 
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
@@ -37,43 +36,56 @@ def cycles(x,t):
 def size(x,t):
 	return t-x.cycles
 
+def support(x,t):
+	return list(flatten(ordering(x,t)))
+
+def locality(x,t):
+	return len(support(x,t))
+
+def ordering(x,t,order=min,orders=min):
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
+def sorting(x,X,t):
+	if not common(support(x,t),support(X,t),t):
+		return False
+	order = support(X,t)
+	cycle = ordering(x,t,order=min,orders=lambda i:order.index(min(i)))
+	length = len(cycle)
+	for k in product(*(range(len(cycle[i])) for i in range(length))):
+		index = [order.index(j) for i in range(length) for j in [*cycle[i][k[i]:],*cycle[i][:k[i]]]]
+		if sorted(index) == index:
+			return True
+	return False
+
 def sort(G,t):
 	G = generate(G,t)
 	g = len(G)
 	
-	key = lambda i: (
-			size(G[i],t),
-			len([j for j in cycles(G[i],t)]),
-			*(len(j) for j in cycles(G[i],t)),
-			tuple(((tuple(j) for j in cycles(G[i],t))))
+	indices = range(g)
+
+	def key(i):
+		cycle = ordering(G[i],t)
+		indices = list(set(flatten(cycle)))
+		number = len(indices)
+		length = size(G[i],t)
+		key = (
+			number,
+			length,
+			*(len(j) for j in cycle),
+			tuple(indices),
 			)
-	indices = list(sorted(range(g),key=key))
+		return key
 	
-	partitions = {}
-	for i in indices:
-		partition = tuple(set(flatten(cycles(G[i],t))))
-		if partition not in partitions:
-			partitions[partition] = []
-		partitions[partition].append(i)
-	key = lambda i: (len(i),*i)
-	indices = list(sorted(partitions,key=key))
-	partitions = {i: partitions[i] for i in indices}
-	indices = [j for i in partitions for j in partitions[i]]	
+	indices = sorted(indices,key=key)
 	
 	return indices
 
 def order(G,t):
 	g = len(G)
-	partitions = {}
-	for i in range(g):
-		partition = tuple(set(flatten(cycles(G[i],t))))
-		if partition not in partitions:
-			partitions[partition] = []
-		partitions[partition].append(i)
-	key = lambda i: (len(i),*i)
-	indices = list(sorted(partitions,key=key))
-	partitions = {i: partitions[i] for i in indices}
-	indices = [j for i in partitions for j in partitions[i]]
+	indices = range(g)
 	return indices
 
 def number(expression,substitutions={},**kwargs):
@@ -144,7 +156,6 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
 	data,basis = (data['data'],data['basis']) if isinstance(data,dict) else (data,None)
 
-	data = data.copy()
 	shape = data.shape
 	default = -1
 
@@ -154,12 +165,14 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	elements = [elements[i] for i in indices]
 	indices = order(elements,t)
 
-	def process(data,basis,unique=None,index=None,indices=None):
+	def process(data,unique=None,index=None,indices=None):
 		
 		d = Symbol('d')
 		e = Symbol('e')
 
 		options = dict(substitutions={e:d**n})
+
+		data = data
 
 		if unique is not None:
 			return data,unique
@@ -228,7 +241,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 				data = list(tmp.values())[-1]
 				unique = None
 
-	data,unique = process(data,basis,unique,index=index,indices=indices)
+	data,unique = process(data,unique,index=index,indices=indices)
 
 	if checkpoint:
 		tmp = {'data':data,'unique':unique}
