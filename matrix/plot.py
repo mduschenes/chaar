@@ -22,8 +22,8 @@ log = lambda *message,verbose=True,**kwargs: logger.info('\t'.join(str(i) for i 
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
 	if sorting:
-		indices = sort(G,t)
 		G = generate(G,t)
+		indices = sort(G,t)
 		G = [G[i] for i in indices]
 	return G
 
@@ -61,7 +61,6 @@ def sorting(x,X,t):
 	return False
 
 def sort(G,t):
-	G = generate(G,t)
 	g = len(G)
 	
 	indices = range(g)
@@ -85,7 +84,42 @@ def sort(G,t):
 
 def order(G,t):
 	g = len(G)
+	partitions = {}
+	for i in range(g):
+		p = tuple(set((k for j in cycles(G[i],t) for k in j)))
+		if p not in partitions:
+			partitions[p] = []
+
+		partitions[p].append(i)
+	key = lambda i: (
+		len(i),
+		*i
+		)
+
+	partitions = {i: partitions[i] for i in sorted(partitions,key=key)}
+
+	indices = [j for i in partitions for j in partitions[i]]
+	return indices
+
+
+def order(G,t):
+	g = len(G)
+
 	indices = range(g)
+
+	def key(i):
+		cycle = ordering(G[i],t)
+		indices = list(set(flatten(cycle)))
+		number = len(indices)
+		length = size(G[i],t)
+		key = (
+			number,
+			*indices
+			)
+		return key
+	
+	indices = sorted(indices,key=key)
+
 	return indices
 
 def number(expression,substitutions={},**kwargs):
@@ -159,10 +193,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	shape = data.shape
 	default = -1
 
-	elements = group(t)
-	indices = sort(elements,t)
-	elements = generate(elements,t)
-	elements = [elements[i] for i in indices]
+	elements = group(t,sorting=True)
 	indices = order(elements,t)
 
 	def process(data,unique=None,index=None,indices=None):
@@ -221,7 +252,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 		
 		tmp = load(checkpoint)
 		
-		if boolean or tmp is None:
+		if tmp is None:
 			
 			index = None
 			data = data

@@ -72,8 +72,8 @@ def tree(n):
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
 	if sorting:
-		indices = sort(G,t)
 		G = generate(G,t)
+		indices = sort(G,t)
 		G = [G[i] for i in indices]
 	return G
 
@@ -88,9 +88,9 @@ def classes(t):
 
 	G = group(t)
 	classes = {partitions(next(iter(i)),t): i for i in G.conjugacy_classes()}
-	
-	indices = sort(G,t)
+
 	G = generate(G,t)
+	indices = sort(G,t)
 
 	G = [G[i] for i in indices]
 	classes = {partition:sorted([G.index(i) for i in classes[partition]]) for partition in sorted(classes)}
@@ -127,7 +127,6 @@ def weingarten(x,y,d,t,local=False,supports={}):
 	return weingarten_element(z,t,d)*(d**t)
 
 def sort(G,t):
-	G = generate(G,t)
 	g = len(G)
 	
 	indices = range(g)

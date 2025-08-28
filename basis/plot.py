@@ -125,7 +125,7 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 		
 		tmp = load(checkpoint)
 
-		if boolean or tmp is None:
+		if tmp is None:
 			
 			index = None
 			data = data
