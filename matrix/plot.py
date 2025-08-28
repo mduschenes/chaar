@@ -51,25 +51,7 @@ def sort(G,t):
 
 def order(G,t):
 	g = len(G)
-	partitions = {}
-	for i in range(g):
-		p = tuple(set(flatten(cycles(G[i],t))))
-		if p not in partitions:
-			partitions[p] = []
-
-		partitions[p].append(i)
-	key = lambda i: (
-		len(i),
-		*i
-		)
-	indices = list(sorted(partitions,key=key))
-
-	partitions = {i: partitions[i] for i in indices}
-	key = lambda i: (
-			size(G[i],t),
-			)
-
-	indices = [j for i in partitions for j in partitions[i]]
+	indices = range(g)
 	return indices
 
 def number(expression,substitutions={},**kwargs):
