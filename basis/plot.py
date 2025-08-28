@@ -194,6 +194,9 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	log(t,d,verbose=verbose)
 
+	key = 'data'
+	data = data[key]
+
 	data,unique = process(data,checkpoint,t=t,d=d,boolean=boolean,verbose=verbose,**kwargs)
 
 	l = len(unique)

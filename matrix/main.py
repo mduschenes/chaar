@@ -110,38 +110,79 @@ def locality(x,t):
 	return len(support(x,t))
 
 def character(x,d,t):
-	return d**(t-size(x,t))/(d**t)
+	return d**(t-size(x,t))
 
 def gram(x,y,d,t,local=False,supports={}):
 	z = ~x*y
-	if local:
-		return character(z,d,t)
-	else:
-		return character(z,d,t)
+	return character(z,d,t)/(d**t)
 
 def weingarten(x,y,d,t,local=False,supports={}):
 	z = ~x*y
 	if local:
-		a,b = supports[x],supports[y]
-		if (len(a)<2):
-			return 1
-		l = max(len(a),len(b))
-		c = list(supports[z])
+		a,b,c = supports[x],supports[y],supports[z]
 		z = Permutation([[c.index(j) for j in i] for i in cycles(z,t)])
-		return weingarten_element(z,l,d)*(d**l)
-	else:
-		return weingarten_element(z,t,d)*(d**t)
+		t = max(len(a),len(b))
+	if t == 0:
+		return 1
+	return weingarten_element(z,t,d)*(d**t)
 
 def sort(G,t):
 	G = generate(G,t)
 	g = len(G)
 	key = lambda i: (
 			size(G[i],t),
-			len([j for j in cycles(G[i],t)]),
+			len(cycles(G[i],t)),
 			*(len(j) for j in cycles(G[i],t)),
 			tuple(((tuple(j) for j in cycles(G[i],t))))
 			)
 	indices = list(sorted(range(g),key=key))
+	return indices
+
+def sort(G,t):
+	G = generate(G,t)
+	g = len(G)
+	
+	indices = range(g)
+
+	def key(i):
+		cycle = ordering(G[i],t)
+		length = size(G[i],t)
+		key = (
+			tuple(tuple(j) for j in cycle),
+			*(len(j) for j in cycle),
+			len(list(flatten(cycle))),
+			length,
+			len(cycle),
+			)
+		return key
+	# key = lambda i: (
+	# 		len(list(flatten(cycles(G[i],t)))),
+	# 		size(G[i],t),
+	# 		len(cycles(G[i],t)),
+	# 		*(len(j) for j in ordering(G[i],t)),
+	# 		tuple(((tuple(j) for j in ordering(G[i],t))))
+	# 		)
+	indices = list(sorted(indices,key=key))
+	
+	# partitions = {}
+	# for i in indices:
+	# 	partition = tuple(set(flatten(cycles(G[i],t))))
+	# 	if partition not in partitions:
+	# 		partitions[partition] = []
+	# 	partitions[partition].append(i)
+	# key = lambda i: (len(i),*i)
+	# indices = list(sorted(partitions,key=key))
+	# partitions = {i: partitions[i] for i in indices}
+	# indices = [j for i in partitions for j in partitions[i]]	
+	
+	# key = lambda i: (
+	# 	size(G[i],t),
+	# 	len(cycles(G[i],t)),
+	# 	*(len(j) for j in cycles(G[i],t)),
+	# 	tuple(((tuple(j) for j in cycles(G[i],t))))
+	# 	)
+	# indices = list(sorted(indices,key=key))
+
 	return indices
 
 def common(support,supports,t,equals=False):
@@ -180,6 +221,10 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 	G = group(t,sorting=True)
 	g = len(G)
 
+	for i in range(g):
+		print(f"{i:^{2 if g<=100 else 3}}",cycles(G[i],t))#,[cycles(G[j],t) for j in range(g) if contains(G[j],G[i],t)])
+	exit()
+
 	path = '%s/data.%d.pkl'%(path,t)
 
 	z = d*e
@@ -209,7 +254,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 	if boolean or data is None:
 		i,j = 0,0
-		data = {attr: Matrix([[0 for j in range(g)] for i in range(g)]) for attr in ['data','norm']}
+		data = {attr: Matrix([[0 for j in range(g)] for i in range(g)]) for attr in ['data','basis']}
 	else:
 		i,j = list(data.keys())[-1]
 		data = list(data.values())[-1]
@@ -222,9 +267,10 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 		tmp['data'] = 0
 	
-		tmp['norm'] = ((character(~G[i]*G[j],d,t))/
-					  ((character(G[i],d,t))*
-					   (character(G[j],d,t)))) if commons[i,j,True] else 0
+		tmp['basis'] = ((gram(G[i],G[j],d,t))/
+					   ((gram(G[0],G[i],d,t))*
+					    (gram(G[0],G[j],d,t)))
+					   ) if commons[i,j,True] else 0
 
 		if orthogonal and not commons[i,j,equals]:
 			continue
@@ -241,21 +287,23 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 			if commons[i,j,True] and (index[i,k] and index[j,l]) and (k != i) and (l != j):
 				
-				tmp['norm'] -= data['norm'][k,l]
+				tmp['basis'] -= data['basis'][k,l]
 
 		tmp['data'] = simplify(tmp['data'])
 
-		tmp['norm'] = simplify(tmp['norm'])
+		tmp['basis'] = simplify(tmp['basis'])
 
 		tmp['data'] = tmp['data'].subs(e,z)
 
 		data['data'][i,j] = tmp['data']
 
-		data['norm'][i,j] = tmp['norm']
+		data['basis'][i,j] = tmp['basis']
 
 		log(i,j,*(data[attr][i,j] for attr in data),verbose=verbose)
 
-		dump(path,{(i,j):data})
+		key = (i,j)
+		objs = {key:data}
+		dump(path,objs)
 
 	return
 

@@ -40,6 +40,7 @@ def size(x,t):
 def sort(G,t):
 	G = generate(G,t)
 	g = len(G)
+	
 	key = lambda i: (
 			size(G[i],t),
 			len([j for j in cycles(G[i],t)]),
@@ -47,11 +48,32 @@ def sort(G,t):
 			tuple(((tuple(j) for j in cycles(G[i],t))))
 			)
 	indices = list(sorted(range(g),key=key))
+	
+	partitions = {}
+	for i in indices:
+		partition = tuple(set(flatten(cycles(G[i],t))))
+		if partition not in partitions:
+			partitions[partition] = []
+		partitions[partition].append(i)
+	key = lambda i: (len(i),*i)
+	indices = list(sorted(partitions,key=key))
+	partitions = {i: partitions[i] for i in indices}
+	indices = [j for i in partitions for j in partitions[i]]	
+	
 	return indices
 
 def order(G,t):
 	g = len(G)
-	indices = range(g)
+	partitions = {}
+	for i in range(g):
+		partition = tuple(set(flatten(cycles(G[i],t))))
+		if partition not in partitions:
+			partitions[partition] = []
+		partitions[partition].append(i)
+	key = lambda i: (len(i),*i)
+	indices = list(sorted(partitions,key=key))
+	partitions = {i: partitions[i] for i in indices}
+	indices = [j for i in partitions for j in partitions[i]]
 	return indices
 
 def number(expression,substitutions={},**kwargs):
@@ -120,7 +142,7 @@ def number(expression,substitutions={},**kwargs):
 
 def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
-	data,norm = (data['data'],data['norm']) if isinstance(data,dict) else (data,None)
+	data,basis = (data['data'],data['basis']) if isinstance(data,dict) else (data,None)
 
 	data = data.copy()
 	shape = data.shape
@@ -132,33 +154,30 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	elements = [elements[i] for i in indices]
 	indices = order(elements,t)
 
-	def process(data,unique=None,index=None,indices=None):
+	def process(data,basis,unique=None,index=None,indices=None):
 		
 		d = Symbol('d')
 		e = Symbol('e')
 
 		options = dict(substitutions={e:d**n})
 
-		data = data
-
 		if unique is not None:
 			return data,unique
-
-		elements = [i for i in product(*(range(i) for i in shape))]
 
 		if index is not None:
 			i,j = index
 		else:
 			i,j = 0,0
 
-		elements = elements[elements.index((i,j))-((i*j)>0):]		
+		elements = [i for i in product(*(range(i) for i in shape))]
+		elements = elements[elements.index((i,j))-((i*j)>0):]
 
 		if index is None:
-			if k is not None and norm is not None:
+
+			if k is not None and basis is not None:
 				tmp = data
 				for i in range(1,k):
-					tmp = tmp*norm*data
-				data = tmp
+					data = data*basis*tmp
 
 		for i,j in elements:
 
@@ -209,7 +228,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 				data = list(tmp.values())[-1]
 				unique = None
 
-	data,unique = process(data,unique,index=index,indices=indices)
+	data,unique = process(data,basis,unique,index=index,indices=indices)
 
 	if checkpoint:
 		tmp = {'data':data,'unique':unique}

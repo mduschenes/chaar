@@ -313,7 +313,9 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	data = transpose(solve(X,x))
 
-	dump(path,data)
+	key = 'data'
+	objs = {key:data}
+	dump(path,objs)
 
 	disp(data)
 
