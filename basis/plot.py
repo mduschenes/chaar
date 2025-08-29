@@ -42,12 +42,6 @@ def support(x,t):
 def locality(x,t):
 	return len(support(x,t))
 
-def ordering(x,t,order=min,orders=min):
-	x = cycles(x,t)
-	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
-	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
-	return x
-
 def sorting(x,X,t):
 	if not common(support(x,t),support(X,t),t):
 		return False
@@ -59,6 +53,14 @@ def sorting(x,X,t):
 		if sorted(index) == index:
 			return True
 	return False
+
+def ordering(x,t,order=None,orders=None):
+	order = (lambda i:min(i)) if order is None else order
+	orders = (lambda i:(len(i),min(i))) if orders is None else orders
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
 
 def sort(G,t):
 
@@ -73,10 +75,10 @@ def sort(G,t):
 		length = size(G[i],t)
 		key = (
 			number,
+			*sorted(indices),*[-t]*(t-number),
 			length,
 			*sorted(len(j) for j in cycle),
-			*set(indices),*[t]*(t-number),
-			*indices,*[t]*(t-number),
+			*indices,*[-t]*(t-number),
 			)
 		return key
 	
@@ -102,7 +104,7 @@ def number(expression,**kwargs):
 
 def process(data,checkpoint,t,d,boolean=None,verbose=None):
 
-	data,norm = (data['data'],data['norm']) if isinstance(data,dict) else (data,None)
+	data = data['data'] if isinstance(data,dict) else data
 
 	data = data.copy()
 	shape = data.shape
@@ -119,6 +121,9 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 		options = {}
 
 		data = np.real(data)
+
+		if indices is not None:		
+			data = np.array([[data[i,j] for j in indices] for i in indices])
 
 		if unique is not None:
 			return data,unique
@@ -231,9 +236,6 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 		return
 
 	log(t,d,verbose=verbose)
-
-	key = 'data'
-	data = data[key]
 
 	data,unique = process(data,checkpoint,t=t,d=d,boolean=boolean,verbose=verbose,**kwargs)
 

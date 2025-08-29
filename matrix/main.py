@@ -126,6 +126,26 @@ def weingarten(x,y,d,t,local=False,supports={}):
 		return 1
 	return weingarten_element(z,t,d)*(d**t)
 
+def sorting(x,X,t):
+	if not common(support(x,t),support(X,t),t):
+		return False
+	order = support(X,t)
+	cycle = ordering(x,t,order=min,orders=lambda i:order.index(min(i)))
+	length = len(cycle)
+	for k in product(*(range(len(cycle[i])) for i in range(length))):
+		index = [order.index(j) for i in range(length) for j in [*cycle[i][k[i]:],*cycle[i][:k[i]]]]
+		if sorted(index) == index:
+			return True
+	return False
+
+def ordering(x,t,order=None,orders=None):
+	order = (lambda i:min(i)) if order is None else order
+	orders = (lambda i:(len(i),min(i))) if orders is None else orders
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
 def sort(G,t):
 
 	g = len(G)
@@ -139,10 +159,10 @@ def sort(G,t):
 		length = size(G[i],t)
 		key = (
 			number,
+			*sorted(indices),*[-t]*(t-number),
 			length,
 			*sorted(len(j) for j in cycle),
-			*set(indices),*[t]*(t-number),
-			*indices,*[t]*(t-number),
+			*indices,*[-t]*(t-number),
 			)
 		return key
 	
@@ -150,23 +170,13 @@ def sort(G,t):
 
 	return indices
 
-def ordering(x,t,order=min,orders=min):
-	x = cycles(x,t)
-	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
-	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
-	return x
+def order(G,t):
+	
+	g = len(G)
 
-def sorting(x,X,t):
-	if not common(support(x,t),support(X,t),t):
-		return False
-	order = support(X,t)
-	cycle = ordering(x,t,order=min,orders=lambda i:order.index(min(i)))
-	length = len(cycle)
-	for k in product(*(range(len(cycle[i])) for i in range(length))):
-		index = [order.index(j) for i in range(length) for j in [*cycle[i][k[i]:],*cycle[i][:k[i]]]]
-		if sorted(index) == index:
-			return True
-	return False
+	indices = range(g)
+
+	return indices
 
 def common(support,supports,t,equals=False):
 	return (
