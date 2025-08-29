@@ -175,8 +175,6 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
 		options = dict(substitutions={e:d**n})
 
-		data = data
-
 		if indices is not None:
 			data = np.array([[data[i,j] for j in indices] for i in indices])
 			basis = np.array([[basis[i,j] for j in indices] for i in indices])
@@ -190,7 +188,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 			i,j = 0,0
 
 		elements = [i for i in product(*(range(i) for i in shape))]
-		elements = elements[elements.index((i,j)):]
+		elements = elements[elements.index((i,j))-((i*j)>0):]
 
 		if index is None:
 
@@ -210,7 +208,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 		
 			if checkpoint:
 				tmp = {(i,j):data}
-				# dump(checkpoint,tmp)
+				dump(checkpoint,tmp)
 
 			# log(i,j,data[i,j],verbose=verbose)
 
@@ -249,7 +247,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
 	if checkpoint:
 		tmp = {'data':data,'unique':unique}
-		# dump(checkpoint,tmp)
+		dump(checkpoint,tmp)
 
 	return data,unique
 
@@ -258,9 +256,7 @@ def dump(path,data):
 	if path is None:
 		return
 
-	directory = os.path.dirname(path)
-	if directory and not os.path.exists(directory):
-		os.makedirs(directory)
+	mkdir(path)
 
 	with open(path, 'wb') as file:
 		file.write(pickle.dumps(data))
@@ -279,6 +275,12 @@ def exists(path):
 		return os.path.exists(path)
 	except:
 		return False
+
+def mkdir(path):
+	directory = os.path.dirname(path) if path else None
+	if directory and not os.path.exists(directory):
+		os.makedirs(directory)
+	return
 
 def flatten(i):
 	if isinstance(i,(list,dict,tuple)):

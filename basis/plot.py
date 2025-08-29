@@ -94,6 +94,13 @@ def order(G,t):
 
 	return indices
 
+def flatten(i):
+	if isinstance(i,(list,dict,tuple)):
+		for j in i:
+			yield from flatten(j)
+	else:
+		yield i
+
 def number(expression,**kwargs):
 	eps = max(1e-8,np.finfo(expression.dtype).eps)
 	expression = np.real(expression)
@@ -110,10 +117,7 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 	shape = data.shape
 	default = -1
 
-	elements = group(t)
-	indices = sort(elements,t)
-	elements = generate(elements,t)
-	elements = [elements[i] for i in indices]
+	elements = group(t,sorting=True)
 	indices = order(elements,t)
 
 	def process(data,unique=None,index=None,indices=None):
@@ -128,14 +132,13 @@ def process(data,checkpoint,t,d,boolean=None,verbose=None):
 		if unique is not None:
 			return data,unique
 
-		elements = [i for i in product(*(range(i) for i in shape))]
-
 		if index is not None:
 			i,j = index
 		else:
 			i,j = 0,0
 
-		elements = elements[elements.index((i,j))-((i*j)>0):]		
+		elements = [i for i in product(*(range(i) for i in shape))]
+		elements = elements[elements.index((i,j))-((i*j)>0):]
 
 		if index is None:
 			pass
@@ -201,9 +204,7 @@ def dump(path,data):
 	if path is None:
 		return
 
-	directory = os.path.dirname(path)
-	if directory and not os.path.exists(directory):
-		os.makedirs(directory)
+	mkdir(path)
 
 	with open(path, 'wb') as file:
 		file.write(pickle.dumps(data))
@@ -222,6 +223,12 @@ def exists(path):
 		return os.path.exists(path)
 	except:
 		return False
+
+def mkdir(path):
+	directory = os.path.dirname(path) if path else None
+	if directory and not os.path.exists(directory):
+		os.makedirs(directory)
+	return
 
 def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 

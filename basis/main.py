@@ -19,9 +19,7 @@ def dump(path,data):
 	if path is None:
 		return
 
-	directory = os.path.dirname(path)
-	if directory and not os.path.exists(directory):
-		os.makedirs(directory)
+	mkdir(path)
 
 	with open(path, 'wb') as file:
 		file.write(pickle.dumps(data))
@@ -41,6 +39,11 @@ def exists(path):
 	except:
 		return False
 
+def mkdir(path):
+	directory = os.path.dirname(path) if path else None
+	if directory and not os.path.exists(directory):
+		os.makedirs(directory)
+	return
 
 array = np.array
 zeros = np.zeros
@@ -278,13 +281,6 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 	G = group(t,sorting=True)
 	g = len(G)
 
-	a = array([[int(contains(G[j],G[i],t)) for j in range(g)] for i in range(g)])
-	b = inv(a)
-
-	data = [a,b]
-	plot(data,path=path)
-	exit()
-
 	path = '%s/data.%d.%d.pkl'%(path,t,d)
 	parse = lambda obj: obj.real.round(8)+0. if isinstance(obj,arrays) and not obj.dtype == int else str(obj) if not isinstance(obj,str) else obj
 	disp = lambda *objs,verbose=True: log(*(parse(obj) for obj in objs),verbose=verbose)
@@ -353,28 +349,32 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	disp(data)
 
+	plot(t,path=path)
+
 	return 
 
 
-def plot(data,path=None):
+def plot(data=None,path=None):
 	
 	import numpy as np
 	import matplotlib
 	import matplotlib.pyplot as plt
 	np.set_printoptions(linewidth=1000)
 
+	if data is None:
+		return
+	elif isinstance(data,int):
+		t = data
+		G = group(t,sorting=True)
+		g = len(G)
+
+		a = array([[int(contains(G[j],G[i],t)) for j in range(g)] for i in range(g)])
+		b = inv(a)
+
+		data = [a,b]
+
 	for x in data:
 		print(x)
-
-	a = data[0]
-	u,v = np.linalg.eig(a)
-	print(u)
-	print(v.T.round(1))
-	exit()
-
-
-
-	path = os.path.join(path,'plot.basis.pdf')
 
 	fig,axes = plt.subplots(1,len(data))
 	
@@ -383,7 +383,7 @@ def plot(data,path=None):
 	values = array(list(set([i for x in data for i in x[x!=null].flatten()])))
 	vmin,vmax = min(values),max(values)
 	lengths = {0:len(values[values<null]),1:len(values[values>null])}
-	alphas = {0:0.6,1:0.8}
+	alphas = {0:0.8,1:1}
 	colors = []
 	for i,value in enumerate(values):
 		index = value>null
@@ -412,6 +412,8 @@ def plot(data,path=None):
 		ax.set_yticks([])
 
 	if path is not None:
+		path = os.path.join(os.path.dirname(path),'plot.basis.pdf')
+		mkdir(path)
 		fig.subplots_adjust()
 		fig.savefig(path)
 

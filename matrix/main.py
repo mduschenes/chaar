@@ -20,14 +20,11 @@ def dump(path,data):
 	if path is None:
 		return
 
-	directory = os.path.dirname(path)
-	if directory and not os.path.exists(directory):
-		os.makedirs(directory)
+	mkdir(path)
 
 	with open(path, 'wb') as file:
 		file.write(pickle.dumps(data))
 	return
-
 
 def load(path):
 	data = None
@@ -42,6 +39,12 @@ def exists(path):
 		return os.path.exists(path)
 	except:
 		return False
+
+def mkdir(path):
+	directory = os.path.dirname(path) if path else None
+	if directory and not os.path.exists(directory):
+		os.makedirs(directory)
+	return
 
 def flatten(i):
 	if isinstance(i,(list,dict,tuple)):
@@ -243,7 +246,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 		i,j = list(data.keys())[-1]
 		data = list(data.values())[-1]
 
-	indices = indices[indices.index((i,j)):]
+	indices = indices[indices.index((i,j))-((i*j)>0):]
 	elements = elements[:]
 
 	for i,j in indices:
@@ -261,7 +264,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 				data['data'][i,j] += values['data'][k,l]
 
-			if commons[i,j,True] and (index[i,k] and index[j,l]) and ((k != i)  or (l != j)):
+			if commons[i,j,True] and (index[i,k] and index[j,l]) and ((k != i) or (l != j)):
 				
 				data['basis'][i,j] -= data['basis'][k,l]
 
