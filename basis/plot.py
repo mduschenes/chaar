@@ -95,6 +95,16 @@ def order(G,t):
 
 	return indices
 
+def common(support,supports,t,equals=False):
+	return (
+		all(k in supports for k in support) and
+		((equals and (len(supports)==len(support))) or 
+		 (not equals and (len(supports)>=len(support))))
+		)
+
+def contains(x,X,t):
+	return ((size(~x*X,t) == (size(X,t)-size(x,t))) and (size(X,t) >= size(x,t)))
+
 def flatten(i):
 	if isinstance(i,(list,dict,tuple)):
 		for j in i:
@@ -274,18 +284,71 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 		# ax.set_title(r'$t = %d ~,~ k = %d$'%(kwargs.get('t'),kwargs.get('k'))) if kwargs.get('t') is not None and kwargs.get('k') is not None else None
 		
 		if figure is not None:
-			# fig.subplots_adjust()
-			# fig.tight_layout()
-			# fig.savefig(figure,bbox_inches="tight")
+			mkdir(figure)
 			fig.subplots_adjust()
-			# fig.tight_layout()
 			fig.savefig(figure)			
-		else:
-			plt.show()
-
 	return
 
+def run(path,t,d,boolean=None,verbose=None,**kwargs):
+	
+	figure = '%s/plot.basis.%d.pdf'%(path,t)
+	mplstyle = 'plot.mplstyle'
 
+	G = group(t,sorting=True)
+	g = len(G)
+
+	X = np.array([[int(contains(G[j],G[i],t)) for j in range(g)] for i in range(g)])
+	Z = np.linalg.inv(X)
+
+	data = [X,Z]
+
+	np.set_printoptions(threshold=sys.maxsize)
+	for x in data:
+		print(x)
+
+	with matplotlib.style.context(mplstyle):
+
+		fig,axes = plt.subplots(1,len(data))
+		
+		name = 'colorbar'
+		null = 0
+		values = np.array(list(set([i for x in data for i in x[x!=null].flatten()])))
+		vmin,vmax = min(values),max(values)
+		lengths = {0:len(values[values<null]),1:len(values[values>null])}
+		alphas = {0:0.8,1:1}
+		colors = []
+		for i,value in enumerate(values):
+			index = value>null
+			color = plt.cm.viridis
+			length = lengths[index]
+			alpha = alphas[index]
+			color = list(color((abs(i)+1)/(length+2)))
+			color[-1] = alpha
+			color = tuple(color)
+
+			colors.append(color)
+
+		cmap = matplotlib.colors.LinearSegmentedColormap.from_list(name,colors)
+		cmap.set_bad('white')
+
+		options = dict(cmap=cmap,norm=plt.Normalize(vmin,vmax),interpolation='none', aspect=1)
+
+		for x,ax in zip(data,axes):
+			
+			x = np.ma.masked_where(x==null, x)
+
+			ax.matshow(x,**options)
+			
+			ax.axis(True)
+			ax.set_xticks([])
+			ax.set_yticks([])
+
+		if figure is not None:
+			mkdir(figure)
+			fig.subplots_adjust()
+			fig.savefig(figure)
+
+	return
 
 def main(*args,**kwargs):
 
@@ -296,6 +359,7 @@ def main(*args,**kwargs):
 	boolean = 1
 	verbose = 1
 
+	run(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
 	plot(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
 
 	return

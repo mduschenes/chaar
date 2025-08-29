@@ -347,76 +347,7 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	disp(data)
 
-	plot(t,path=path)
-
 	return 
-
-
-def plot(data=None,path=None):
-	
-	import numpy as np
-	import matplotlib
-	import matplotlib.pyplot as plt
-	np.set_printoptions(linewidth=1000)
-
-	if data is None:
-		return
-	elif isinstance(data,int):
-		t = data
-		G = group(t,sorting=True)
-		g = len(G)
-
-		a = array([[int(contains(G[j],G[i],t)) for j in range(g)] for i in range(g)])
-		b = inv(a)
-
-		data = [a,b]
-
-	for x in data:
-		print(x)
-
-	fig,axes = plt.subplots(1,len(data))
-	
-	name = 'colorbar'
-	null = 0
-	values = array(list(set([i for x in data for i in x[x!=null].flatten()])))
-	vmin,vmax = min(values),max(values)
-	lengths = {0:len(values[values<null]),1:len(values[values>null])}
-	alphas = {0:0.8,1:1}
-	colors = []
-	for i,value in enumerate(values):
-		index = value>null
-		color = plt.cm.viridis
-		length = lengths[index]
-		alpha = alphas[index]
-		color = list(color((abs(i)+1)/(length+2)))
-		color[-1] = alpha
-		color = tuple(color)
-
-		colors.append(color)
-
-	cmap = matplotlib.colors.LinearSegmentedColormap.from_list(name,colors)
-	cmap.set_bad('white')
-
-	options = dict(cmap=cmap,norm=plt.Normalize(vmin,vmax),interpolation='none', aspect=1)
-
-	for x,ax in zip(data,axes):
-		
-		x = np.ma.masked_where(x==null, x)
-
-		ax.matshow(x,**options)
-		
-		ax.axis(True)
-		ax.set_xticks([])
-		ax.set_yticks([])
-
-	if path is not None:
-		path = os.path.join(os.path.dirname(path),'plot.basis.pdf')
-		mkdir(path)
-		fig.subplots_adjust()
-		fig.savefig(path)
-
-	return
-
 
 def main(*args,**kwargs):
 
@@ -426,7 +357,7 @@ def main(*args,**kwargs):
 
 	boolean = 1
 	verbose = 1
-	
+
 	run(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
 
 	return

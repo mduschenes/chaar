@@ -340,11 +340,8 @@ def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 		# ax.set_title(r'$t = %d ~,~ k = %d$'%(kwargs.get('t'),kwargs.get('k'))) if kwargs.get('t') is not None and kwargs.get('k') is not None else None
 		
 		if figure is not None:
-			# fig.subplots_adjust()
-			# fig.tight_layout()
-			# fig.savefig(figure,bbox_inches="tight")
+			mkdir(figure)
 			fig.subplots_adjust()
-			# fig.tight_layout()
 			fig.savefig(figure)			
 		else:
 			plt.show()
