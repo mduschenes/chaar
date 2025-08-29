@@ -61,18 +61,27 @@ def sorting(x,X,t):
 	return False
 
 def sort(G,t):
-	
+
 	g = len(G)
 	
 	indices = range(g)
 
 	def key(i):
-		indices = set(support(G[i],t))
-		key = (len(indices),*indices)
+		cycle = ordering(G[i],t)
+		indices = list(flatten(cycle))
+		number = len(indices)
+		length = size(G[i],t)
+		key = (
+			number,
+			length,
+			*sorted(len(j) for j in cycle),
+			*set(indices),*[t]*(t-number),
+			*indices,*[t]*(t-number),
+			)
 		return key
-
-	indices = sorted(indices,key=key)
 	
+	indices = sorted(indices,key=key)
+
 	return indices
 
 def order(G,t):
@@ -82,7 +91,7 @@ def order(G,t):
 	indices = range(g)
 
 	return indices
-	
+
 def number(expression,substitutions={},**kwargs):
 
 	def substitute(expression):
@@ -167,12 +176,6 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 		data = data
 
 		if unique is not None:
-
-			if indices is not None:
-				data = np.array([[data[i,j] for j in indices] for i in indices])
-	
-			print(indices)
-
 			return data,unique
 
 		if index is not None:

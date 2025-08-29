@@ -127,25 +127,26 @@ def weingarten(x,y,d,t,local=False,supports={}):
 	return weingarten_element(z,t,d)*(d**t)
 
 def sort(G,t):
-	
+
 	g = len(G)
 	
 	indices = range(g)
 
 	def key(i):
-		indices = set(support(G[i],t))
-		key = (len(indices),*indices)
+		cycle = ordering(G[i],t)
+		indices = list(flatten(cycle))
+		number = len(indices)
+		length = size(G[i],t)
+		key = (
+			number,
+			length,
+			*sorted(len(j) for j in cycle),
+			*set(indices),*[t]*(t-number),
+			*indices,*[t]*(t-number),
+			)
 		return key
-
+	
 	indices = sorted(indices,key=key)
-	
-	return indices
-
-def order(G,t):
-	
-	g = len(G)
-
-	indices = range(g)
 
 	return indices
 
