@@ -22,9 +22,9 @@ log = lambda *message,verbose=True,**kwargs: logger.info('\t'.join(str(i) for i 
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
 	if sorting:
-		indices = sort(G,t)
 		G = generate(G,t)
-		G = [G[i] for i in indices]		
+		indices = sort(G,t)
+		G = [G[i] for i in indices]
 	return G
 
 def generate(G,t):
@@ -36,21 +36,51 @@ def cycles(x,t):
 def size(x,t):
 	return t-x.cycles
 
+def support(x,t):
+	return list(flatten(ordering(x,t)))
+
+def locality(x,t):
+	return len(support(x,t))
+
+def ordering(x,t,order=min,orders=min):
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
+def sorting(x,X,t):
+	if not common(support(x,t),support(X,t),t):
+		return False
+	order = support(X,t)
+	cycle = ordering(x,t,order=min,orders=lambda i:order.index(min(i)))
+	length = len(cycle)
+	for k in product(*(range(len(cycle[i])) for i in range(length))):
+		index = [order.index(j) for i in range(length) for j in [*cycle[i][k[i]:],*cycle[i][:k[i]]]]
+		if sorted(index) == index:
+			return True
+	return False
+
 def sort(G,t):
-	G = generate(G,t)
+	
 	g = len(G)
-	key = lambda i: (
-			size(G[i],t),
-			len([j for j in cycles(G[i],t)]),
-			*(len(j) for j in cycles(G[i],t)),
-			tuple(((tuple(j) for j in cycles(G[i],t))))
-			)
-	indices = list(sorted(range(g),key=key))
+	
+	indices = range(g)
+
+	def key(i):
+		indices = set(support(G[i],t))
+		key = (len(indices),*indices)
+		return key
+
+	indices = sorted(indices,key=key)
+	
 	return indices
 
 def order(G,t):
+	
 	g = len(G)
+
 	indices = range(g)
+
 	return indices
 
 def number(expression,**kwargs):

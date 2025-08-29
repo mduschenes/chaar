@@ -61,67 +61,28 @@ def sorting(x,X,t):
 	return False
 
 def sort(G,t):
+	
 	g = len(G)
 	
 	indices = range(g)
 
 	def key(i):
-		cycle = ordering(G[i],t)
-		indices = list(set(flatten(cycle)))
-		number = len(indices)
-		length = size(G[i],t)
-		key = (
-			number,
-			length,
-			*(len(j) for j in cycle),
-			tuple(indices),
-			)
+		indices = set(support(G[i],t))
+		key = (len(indices),*indices)
 		return key
-	
+
 	indices = sorted(indices,key=key)
 	
 	return indices
 
 def order(G,t):
-	g = len(G)
-	partitions = {}
-	for i in range(g):
-		p = tuple(set((k for j in cycles(G[i],t) for k in j)))
-		if p not in partitions:
-			partitions[p] = []
-
-		partitions[p].append(i)
-	key = lambda i: (
-		len(i),
-		*i
-		)
-
-	partitions = {i: partitions[i] for i in sorted(partitions,key=key)}
-
-	indices = [j for i in partitions for j in partitions[i]]
-	return indices
-
-
-def order(G,t):
+	
 	g = len(G)
 
 	indices = range(g)
 
-	def key(i):
-		cycle = ordering(G[i],t)
-		indices = list(set(flatten(cycle)))
-		number = len(indices)
-		length = size(G[i],t)
-		key = (
-			number,
-			*indices
-			)
-		return key
-	
-	indices = sorted(indices,key=key)
-
 	return indices
-
+	
 def number(expression,substitutions={},**kwargs):
 
 	def substitute(expression):
@@ -206,6 +167,12 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 		data = data
 
 		if unique is not None:
+
+			if indices is not None:
+				data = np.array([[data[i,j] for j in indices] for i in indices])
+	
+			print(indices)
+
 			return data,unique
 
 		if index is not None:

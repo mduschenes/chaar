@@ -159,8 +159,8 @@ def tree(n):
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
 	if sorting:
-		indices = sort(G,t)
 		G = generate(G,t)
+		indices = sort(G,t)
 		G = [G[i] for i in indices]
 	return G
 
@@ -175,9 +175,9 @@ def classes(t):
 
 	G = group(t)
 	classes = {partitions(next(iter(i)),t): i for i in G.conjugacy_classes()}
-	
-	indices = sort(G,t)
+
 	G = generate(G,t)
+	indices = sort(G,t)
 
 	G = [G[i] for i in indices]
 	classes = {partition:sorted([G.index(i) for i in classes[partition]]) for partition in sorted(classes)}
@@ -197,26 +197,30 @@ def locality(x,t):
 	return len(support(x,t))
 
 def character(x,d,t):
-	return d**(t-size(x,t))/(d**t)
+	return d**(t-size(x,t))
 
 def sort(G,t):
-	G = generate(G,t)
+	
 	g = len(G)
-	key = lambda i: (
-			size(G[i],t),
-			len([j for j in cycles(G[i],t)]),
-			*(len(j) for j in cycles(G[i],t)),
-			tuple(((tuple(j) for j in cycles(G[i],t))))
-			)
-	indices = list(sorted(range(g),key=key))
+	
+	indices = range(g)
+
+	def key(i):
+		indices = set(support(G[i],t))
+		key = (len(indices),*indices)
+		return key
+
+	indices = sorted(indices,key=key)
+	
 	return indices
 
-def common(support,supports,t,equals=False):
-	return (
-		all(k in supports for k in support) and
-		((equals and (len(supports)==len(support))) or 
-		 (not equals and (len(supports)>=len(support))))
-		)
+def order(G,t):
+	
+	g = len(G)
+
+	indices = range(g)
+
+	return indices
 
 def ordering(x,t,order=min,orders=min):
 	x = cycles(x,t)
@@ -235,6 +239,13 @@ def sorting(x,X,t):
 		if sorted(index) == index:
 			return True
 	return False
+
+def common(support,supports,t,equals=False):
+	return (
+		all(k in supports for k in support) and
+		((equals and (len(supports)==len(support))) or 
+		 (not equals and (len(supports)>=len(support))))
+		)
 
 def contains(x,X,t):
 	return ((size(~x*X,t) == (size(X,t)-size(x,t))) and (size(X,t) >= size(x,t)))
