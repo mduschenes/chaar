@@ -20,11 +20,14 @@ def dump(path,data):
 	if path is None:
 		return
 
-	mkdir(path)
+	directory = os.path.dirname(path)
+	if directory and not os.path.exists(directory):
+		os.makedirs(directory)
 
 	with open(path, 'wb') as file:
 		file.write(pickle.dumps(data))
 	return
+
 
 def load(path):
 	data = None
@@ -39,12 +42,6 @@ def exists(path):
 		return os.path.exists(path)
 	except:
 		return False
-
-def mkdir(path):
-	directory = os.path.dirname(path) if path else None
-	if directory and not os.path.exists(directory):
-		os.makedirs(directory)
-	return
 
 def flatten(i):
 	if isinstance(i,(list,dict,tuple)):
@@ -129,6 +126,12 @@ def weingarten(x,y,d,t,local=False,supports={}):
 		return 1
 	return weingarten_element(z,t,d)*(d**t)
 
+def ordering(x,t,order=min,orders=min):
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
 def sorting(x,X,t):
 	if not common(support(x,t),support(X,t),t):
 		return False
@@ -140,14 +143,6 @@ def sorting(x,X,t):
 		if sorted(index) == index:
 			return True
 	return False
-
-def ordering(x,t,order=None,orders=None):
-	order = (lambda i:min(i)) if order is None else order
-	orders = (lambda i:(len(i),min(i))) if orders is None else orders
-	x = cycles(x,t)
-	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
-	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
-	return x
 
 def sort(G,t):
 
@@ -246,7 +241,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 		i,j = list(data.keys())[-1]
 		data = list(data.values())[-1]
 
-	indices = indices[indices.index((i,j))-((i*j)>0):]
+	indices = indices[indices.index((i,j)):]
 	elements = elements[:]
 
 	for i,j in indices:

@@ -42,6 +42,15 @@ def support(x,t):
 def locality(x,t):
 	return len(support(x,t))
 
+def character(x,d,t):
+	return d**(t-size(x,t))
+
+def ordering(x,t,order=min,orders=min):
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
 def sorting(x,X,t):
 	if not common(support(x,t),support(X,t),t):
 		return False
@@ -53,14 +62,6 @@ def sorting(x,X,t):
 		if sorted(index) == index:
 			return True
 	return False
-
-def ordering(x,t,order=None,orders=None):
-	order = (lambda i:min(i)) if order is None else order
-	orders = (lambda i:(len(i),min(i))) if orders is None else orders
-	x = cycles(x,t)
-	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
-	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
-	return x
 
 def sort(G,t):
 
@@ -168,16 +169,14 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	elements = group(t,sorting=True)
 	indices = order(elements,t)
 
-	def process(data,basis,unique=None,index=None,indices=None):
+	def process(data,unique=None,index=None,indices=None):
 		
 		d = Symbol('d')
 		e = Symbol('e')
 
 		options = dict(substitutions={e:d**n})
 
-		if indices is not None:
-			data = np.array([[data[i,j] for j in indices] for i in indices])
-			basis = np.array([[basis[i,j] for j in indices] for i in indices])
+		data = data
 
 		if unique is not None:
 			return data,unique
@@ -216,13 +215,16 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 
 		unique = np.unique(data[data>=0])
 
+		if indices is not None:
+			data = np.array([[data[i,j] for j in indices] for i in indices])
+
 		return data,unique
 
 	
 	if checkpoint:
 		
 		tmp = load(checkpoint)
-
+		
 		if tmp is None:
 			
 			index = None
@@ -243,7 +245,7 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 				data = list(tmp.values())[-1]
 				unique = None
 
-	data,unique = process(data,basis,unique,index=index,indices=indices)
+	data,unique = process(data,unique,index=index,indices=indices)
 
 	if checkpoint:
 		tmp = {'data':data,'unique':unique}
@@ -252,7 +254,6 @@ def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
 	return data,unique
 
 def dump(path,data):
-
 	if path is None:
 		return
 

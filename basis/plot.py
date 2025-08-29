@@ -42,6 +42,15 @@ def support(x,t):
 def locality(x,t):
 	return len(support(x,t))
 
+def character(x,d,t):
+	return d**(t-size(x,t))
+
+def ordering(x,t,order=min,orders=min):
+	x = cycles(x,t)
+	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
+	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
+	return x
+
 def sorting(x,X,t):
 	if not common(support(x,t),support(X,t),t):
 		return False
@@ -53,14 +62,6 @@ def sorting(x,X,t):
 		if sorted(index) == index:
 			return True
 	return False
-
-def ordering(x,t,order=None,orders=None):
-	order = (lambda i:min(i)) if order is None else order
-	orders = (lambda i:(len(i),min(i))) if orders is None else orders
-	x = cycles(x,t)
-	index = {i:x[i].index(order(x[i])) for i in sorted(range(len(x)),key=lambda i:orders(x[i]))}
-	x = [[*x[i][index[i]:],*x[i][:index[i]]] for i in index]
-	return x
 
 def sort(G,t):
 
