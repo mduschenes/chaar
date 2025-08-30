@@ -66,7 +66,7 @@ def sorting(x,X,t):
 def sort(G,t):
 
 	g = len(G)
-	
+
 	indices = range(g)
 
 	def key(i):
@@ -82,13 +82,13 @@ def sort(G,t):
 			*indices,*[-t]*(t-number),
 			)
 		return key
-	
+
 	indices = sorted(indices,key=key)
 
 	return indices
 
 def order(G,t):
-	
+
 	g = len(G)
 
 	indices = range(g)
@@ -98,7 +98,7 @@ def order(G,t):
 def common(support,supports,t,equals=False):
 	return (
 		all(k in supports for k in support) and
-		((equals and (len(supports)==len(support))) or 
+		((equals and (len(supports)==len(support))) or
 		 (not equals and (len(supports)>=len(support))))
 		)
 
@@ -286,11 +286,11 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 		if figure is not None:
 			mkdir(figure)
 			fig.subplots_adjust()
-			fig.savefig(figure)			
+			fig.savefig(figure)
 	return
 
 def run(path,t,d,boolean=None,verbose=None,**kwargs):
-	
+
 	figure = '%s/plot.basis.%d.pdf'%(path,t)
 	mplstyle = 'plot.mplstyle'
 
@@ -298,7 +298,8 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 	g = len(G)
 
 	X = np.array([[int(contains(G[j],G[i],t)) for j in range(g)] for i in range(g)])
-	Z = np.linalg.inv(X)
+	I = np.eye(g)
+	Z = sum(np.linalg.matrix_power(I-X,i) for i in range(g+1))
 
 	data = [X,Z]
 
@@ -309,7 +310,7 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 	with matplotlib.style.context(mplstyle):
 
 		fig,axes = plt.subplots(1,len(data))
-		
+
 		name = 'colorbar'
 		null = 0
 		values = np.array(list(set([i for x in data for i in x[x!=null].flatten()])))
@@ -334,11 +335,11 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 		options = dict(cmap=cmap,norm=plt.Normalize(vmin,vmax),interpolation='none', aspect=1)
 
 		for x,ax in zip(data,axes):
-			
+
 			x = np.ma.masked_where(x==null, x)
 
 			ax.matshow(x,**options)
-			
+
 			ax.axis(True)
 			ax.set_xticks([])
 			ax.set_yticks([])

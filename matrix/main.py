@@ -147,7 +147,7 @@ def sorting(x,X,t):
 def sort(G,t):
 
 	g = len(G)
-	
+
 	indices = range(g)
 
 	def key(i):
@@ -163,13 +163,13 @@ def sort(G,t):
 			*indices,*[-t]*(t-number),
 			)
 		return key
-	
+
 	indices = sorted(indices,key=key)
 
 	return indices
 
 def order(G,t):
-	
+
 	g = len(G)
 
 	indices = range(g)
@@ -227,7 +227,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 					(gram(G[i],G[j],d,t))/
 				   ((gram(G[0],G[i],d,t))*
 					(gram(G[0],G[j],d,t)))
-					) if commons[i,j,True] else 0
+					)
 			
 			indices.append((i,j))
 			elements.append((i,j))
@@ -251,7 +251,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 		data['data'][i,j] = 0
 	
-		data['basis'][i,j] = values['basis'][i,j]
+		data['basis'][i,j] = values['basis'][i,j] if ((not orthogonal) or commons[i,j,True]) else 0
 
 		for k,l in elements:
 
@@ -259,7 +259,7 @@ def run(path,t,d,e,boolean=None,verbose=None,**kwargs):
 
 				data['data'][i,j] += values['data'][k,l]
 
-			if commons[i,j,True] and (index[i,k] and index[j,l]) and ((k != i) or (l != j)):
+			if ((index[i,k] and index[j,l]) and ((k != i) or (l != j))) and ((not orthogonal) or commons[i,j,True]):
 				
 				data['basis'][i,j] -= data['basis'][k,l]
 
