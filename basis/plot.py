@@ -293,6 +293,7 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	figure = '%s/plot.basis.%d.pdf'%(path,t)
 	mplstyle = 'plot.mplstyle'
+	np.set_printoptions(threshold=sys.maxsize)
 
 	G = group(t,sorting=True)
 	g = len(G)
@@ -303,7 +304,31 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 	data = [X,Z]
 
-	np.set_printoptions(threshold=sys.maxsize)
+	indices = {
+		6:[i for i in range(g) if cycles(G[i],t) in [[[0,1],[2,3,4]],[[0,1,2,3,4]],[[0,1],[2,3],[4,5]],[[0,1,2],[3,4,5]],[[0,1,2,3],[4,5]],[[0,1,2,3,4,5]]]]
+		}.get(t,range(g))
+
+	for i in indices:
+		s = {j:[] for j in set(tuple(sorted(support(G[j],t))) for j in range(g) if contains(G[j],G[i],t))}
+		for j in range(g):
+			l = tuple(sorted(support(G[j],t)))
+			if l in s:
+				s[l].extend([k for k in range(g) if contains(G[j],G[k],t) and contains(G[k],G[i],t) and k not in s[l]])
+		for l in list(s):
+			x = sum(Z[i,k] for k in s[l])
+			print(l,[(cycles(G[k],t),Z[i,k]) for k in s[l]],x)
+			if not x:
+				s.pop(l)
+			else:
+				s[l] = [s[l],x]
+			print()
+
+		assert len(s) == 1
+		print(cycles(G[i],t),s)
+		print()
+		print()
+	exit()
+
 	for x in data:
 		print(x)
 
@@ -361,7 +386,7 @@ def main(*args,**kwargs):
 	verbose = 1
 
 	run(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
-	plot(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
+	# plot(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
 
 	return
 
