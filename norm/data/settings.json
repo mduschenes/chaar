@@ -1,10 +1,11 @@
 {
 	"path":"data.json",
+	"settings":"settings.json",
 	"boolean":{
 		"run":0,
 		"load":1,
 		"dump":0,
-		"plot":true
+		"plot":1
 	},
 	"permutations":["t"],
 	"model":{
@@ -37,8 +38,9 @@
 			"color":"viridis"
 		},			
 		"settings":{
-			"ax.set_ylabel":{"ylabel":"$\\norm{\\Tau^{(t)}_{\\textrm{cHaar}}}^{2}/\\norm{\\Tau^{(t)}_{\\textrm{Haar}}}^{2}$"},
-			"ax.set_xlabel":{"xlabel":"$d_{\\mathcal{H}}$"},
+			"text":{"s":"$\\Large{1}/\\scriptstyle{||{\\Tau^{(t)}_{\\mathcal{U}(d)}}||^{2}}$","color":"grey"},
+			"ax.set_ylabel":{"ylabel":"$\\norm{\\Tau^{(t)}_{\\mathcal{C}(d,d_{\\mathcal{E}})}}^{2}/\\norm{\\Tau^{(t)}_{\\mathcal{U}(d)}}^{2}$"},
+			"ax.set_xlabel":{"xlabel":"$d$"},
 			"ax.set_xscale":{"value":"linear"},
 			"ax.set_yscale":{"value":"log","base":10},
 			"ax.set_yticks":{"ticks":[0.5,1,1.5,2,2.5,3,100]},

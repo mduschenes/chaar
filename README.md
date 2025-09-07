@@ -18,7 +18,7 @@ Exact calculations of Haar and cHaar twirl quantities using `sympy`, `haarpy`, a
 ## norm
 - Compute `t`-order, various $d,d_{\mathcal{E}}$-dimensional cHaar twirl norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ relative to Haar, Depolarize twirl norms exactly using `sympy` and `numpy`.
 ```python
-	./main.py settings.json
+	./main.py <path>
 ```
 
 <!-- ## test

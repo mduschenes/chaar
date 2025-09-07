@@ -1,10 +1,11 @@
 {
-	"path":"data/data.json",
+	"path":"data.json",
+	"settings":"settings.json",
 	"boolean":{
 		"run":0,
 		"load":1,
 		"dump":0,
-		"plot":true
+		"plot":1
 	},
 	"permutations":["t"],
 	"model":{
@@ -29,15 +30,16 @@
 			"x":"d",
 			"y":"data",
 			"t":[
-				{"marker":"o","markersize":9,"linestyle":"-","linewidth":2.75,"alpha":0.8},
-				{"marker":"^","markersize":9,"linestyle":"dashdot","linewidth":2.75,"alpha":0.8},
-				{"marker":"s","markersize":9,"linestyle":":","linewidth":2.75,"alpha":0.8},
-				{"marker":"*","markersize":9,"linestyle":"dashed","linewidth":2.75,"alpha":0.8}
+				{"marker":"o","markersize":8,"linestyle":"-","linewidth":2.5,"alpha":0.8},
+				{"marker":"^","markersize":8,"linestyle":"dashdot","linewidth":2.5,"alpha":0.8},
+				{"marker":"s","markersize":8,"linestyle":":","linewidth":2.5,"alpha":0.8},
+				{"marker":"*","markersize":8,"linestyle":"dashed","linewidth":2.5,"alpha":0.8}
 				],
 			"color":"viridis"
 		},			
 		"settings":{
-			"ax.set_ylabel":{"ylabel":"$||{\\Tau^{(t)}_{\\mathcal{C}_{\\textrm{cHaar}}^{d d_{\\mathcal{E}}}}}||^{2}~/~||{\\Tau^{(t)}_{\\mathcal{C}_{\\textrm{Haar}}^{d}}}||^{2}$"},
+			"text":{"s":"$\\Large{1}/\\scriptstyle{||{\\Tau^{(t)}_{\\mathcal{U}(d)}}||^{2}}$","color":"grey"},
+			"ax.set_ylabel":{"ylabel":"$\\norm{\\Tau^{(t)}_{\\mathcal{C}(d,d_{\\mathcal{E}})}}^{2}/\\norm{\\Tau^{(t)}_{\\mathcal{U}(d)}}^{2}$"},
 			"ax.set_xlabel":{"xlabel":"$d$"},
 			"ax.set_xscale":{"value":"linear"},
 			"ax.set_yscale":{"value":"log","base":10},
@@ -65,7 +67,7 @@
 			"fig.set_size_inches":{"w":12,"h":12},
 			"fig.subplots_adjust":{},
 			"fig.tight_layout":{},
-			"fig.savefig":{"fname":"data/plot.pdf"}
+			"fig.savefig":{"fname":"plot.pdf"}
 		}
 	}
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys,os
 import json
 import numpy as np
 import matplotlib
@@ -14,7 +14,7 @@ from scipy.special import factorial as factorial
 from natsort import natsorted
 from itertools import product
 from functools import reduce,partial
-from copy import deepcopy
+from copy import deepcopy as copy
 from math import prod
 
 import threading
@@ -196,12 +196,17 @@ def func(*args,**kwargs):
 	return data
 
 
-def setter(obj,key,value,delimiter='.'):
+def setter(obj,key,value,path=None,delimiter='.'):
 	key = key.split(delimiter) if isinstance(key,str) else key
+	value = copy(value)
 	try:
 		obj = obj.get(key[0],None)
 		for i in key[1:]:
 			obj = getattr(obj,i)
+
+		if path and key == ['fig','savefig'] and isinstance(value,dict) and value.get('fname'):
+			value['fname'] = os.path.join(path,value.get('fname'))
+
 		if callable(obj):
 			obj(**value)
 		else:
@@ -263,7 +268,7 @@ def permute(kwargs,permutations=None,func=None):
 		}
 	return kwargs
 
-def process(obj,data):
+def process(obj,data,boolean=None,verbose=None):
 
 	def func(obj,data):
 		return
@@ -272,7 +277,7 @@ def process(obj,data):
 
 	return
 
-def plot(data,attributes=None,options=None,settings=None,mplstyle=None):
+def plot(path,data,attributes=None,options=None,settings=None,mplstyle=None,boolean=None,verbose=None):
 
 	if data is None:
 		return
@@ -281,7 +286,7 @@ def plot(data,attributes=None,options=None,settings=None,mplstyle=None):
 	options = {} if options is None else options
 	settings = {} if settings is None else settings
 
-	mplstyle = 'plot.mplstyle' if mplstyle is None else mplstyle
+	mplstyle = os.path.join(path,'plot.mplstyle' if mplstyle is None else mplstyle)
 	
 	variables = {attr: list(natsorted(set(data[i][attr] for i in data)) )
 					  for attr in set((attr for i in data for attr in data[i] 
@@ -338,7 +343,7 @@ def plot(data,attributes=None,options=None,settings=None,mplstyle=None):
 			xerr = None
 			yerr = None
 
-			log('Plot',attrs,y)
+			log('Plot',attrs,y,verbose=verbose)
 
 			properties = dict(
 			)
@@ -365,17 +370,18 @@ def plot(data,attributes=None,options=None,settings=None,mplstyle=None):
 				)
 			ax.hlines(y=1/factorial(attrs[attr]),xmin=min(x)*(-4),xmax=max(x)*1.2,**opts)
 			
-			if i == (len(attributes)-1):
-				ax.text(x=max(x)*0.78,y=1/factorial(attrs[attr])*0.68,s='$\\Large{1}/\\scriptstyle{||{\\Tau^{(t)}_{\\mathcal{C}_{\\textrm{Haar}}^{d}}}||^{2}}$',color='grey')
+			setting = 'text'
+			if i == (len(attributes)-1) and settings.get(setting):
+				ax.text(x=max(x)*0.78,y=1/factorial(attrs[attr])*0.68,**settings.get(setting,{}))
 
 			for setting in settings:
-				setter(obj,setting,settings[setting])
+				setter(obj,setting,settings[setting],path=path)
 
 
 	return
 
 
-def run(func,permutations,**kwargs):
+def run(path,data,func,permutations,boolean=None,verbose=None,**kwargs):
 	
 	keywords = permute(kwargs,permutations=permutations)
 
@@ -384,7 +390,7 @@ def run(func,permutations,**kwargs):
 		
 		args = {**kwargs,**keywords[key]}
 
-		log('Model',args)
+		log('Model',args,verbose=verbose)
 
 		tmp = func(**args)
 
@@ -393,10 +399,15 @@ def run(func,permutations,**kwargs):
 	return data
 
 
-def main(settings=None,**kwargs):
+def main(path=None,**kwargs):
+
+	if not path:
+		return
 
 	default = {}
-	settings = load(settings,default=default)	
+	settings = 'settings.json'
+
+	settings = load(os.path.join(path,settings),default=default)
 
 	defaults = {'path':None,'boolean':{},'permutations':None,'model':{},'plot':{}}
 	if settings is None:
@@ -405,18 +416,20 @@ def main(settings=None,**kwargs):
 		for default in defaults})
 
 	data = None
+	boolean = True
+	verbose = True
 
 	if settings['boolean'].get('load'):
-		data = load(settings['path'])
+		data = load(os.path.join(path,settings['path']))
 
 	if settings['boolean'].get('run'):
-		data = run(func,settings['permutations'],**settings['model'])
+		data = run(path,data,func,settings['permutations'],**settings['model'],boolean=boolean,verbose=boolean)
 		
 	if settings['boolean'].get('dump'):
-		dump(data,settings['path'])
+		dump(data,os.path.join(path,settings['path']))
 
 	if settings['boolean'].get('plot'):
-		plot(data,**settings['plot'])
+		plot(path,data,**settings['plot'],boolean=boolean,verbose=boolean)
 
 	return
 
