@@ -2,7 +2,7 @@
 Exact calculations of Haar and cHaar twirl quantities using `sympy`, `haarpy`, and `numpy`.
 
 ## matrix
-- Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar twirl permutation and localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}(\sigma,\pi) \to \tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ using `sympy` and `haarpy`.
+- Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar twirl permutation and localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}(\sigma,\pi) \to \tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ and norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ using `sympy` and `haarpy`.
 ```python
 	./main.py <path> <t>
 	./plot.py <path> <t> <k> <n>
@@ -13,12 +13,6 @@ Exact calculations of Haar and cHaar twirl quantities using `sympy`, `haarpy`, a
 ```python
 	./main.py <path> <t> <d>
 	./plot.py <path> <t> <d>
-```
-
-## norm
-- Compute `t`-order, various $d,d_{\mathcal{E}}$-dimensional cHaar twirl norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ relative to Haar, Depolarize twirl norms exactly using `sympy` and `numpy`.
-```python
-	./main.py <path>
 ```
 
 <!-- ## test
