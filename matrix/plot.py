@@ -355,7 +355,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 	def process(path,t,k,n,boolean=None,verbose=None):
 
 		D = range(0,6+1)
-		E = [-1,-2,1,2]
+		E = [-1,-2,-4,1,2]
 
 		T = range(2,t+1)
 		K = [1,k]
@@ -514,7 +514,7 @@ def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 	norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
-	# matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	return
 
