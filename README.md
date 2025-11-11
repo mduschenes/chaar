@@ -1,8 +1,8 @@
 # Haar, cHaar Calculations
-Exact calculations of Haar and cHaar twirl quantities using `sympy`, `haarpy`, and `numpy`.
+Exact calculations of Haar and cHaar ensemble quantities using `sympy`, `haarpy`, and `numpy`.
 
 ## matrix
-- Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar twirl permutation and localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}(\sigma,\pi) \to \tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ and norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ using `sympy` and `haarpy`.
+- Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar ensemble localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ and norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ using `sympy` and `haarpy`.
 ```python
 	./main.py <path> <t>
 	./plot.py <path> <t> <k> <n>
