@@ -1,8 +1,8 @@
 # Haar, cHaar Calculations
 Exact calculations of Haar and cHaar ensemble quantities using `sympy`, `haarpy`, and `numpy`.
 
-This library is used in the preparation of the work, with associated branches:
-	- *Moments of quantum channel ensembles*, Duschenes, M, Garcia-Martin, D, Holmes, Z, Cerezo, M (2025) found on [arXiv](https://arxiv.org/abs/2511.XXXXX).
+This library is used in the preparation of the work:
+- *Moments of quantum channel ensembles*, Duschenes, M, Garcia-Martin, D, Holmes, Z, Cerezo, M (2025) found on [arXiv](https://arxiv.org/abs/2511.XXXXX).
 
 ## matrix
 - Compute `t`-order `k`-concatenated, arbitrary $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar ensemble localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$ and norm $|\tau_{dd_{\mathcal{E}}}^{(t)}|$ using `sympy` and `haarpy`.
