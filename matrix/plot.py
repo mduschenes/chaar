@@ -510,11 +510,174 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 	return
 
+
+def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
+
+	def process(path,t,k,n,boolean=None,verbose=None):
+
+		D = range(0,6+1)
+		E = [-1,-2,-4,1,2]
+
+		T = range(2,t+1)
+		K = [1,k]
+		N = range(n)
+
+		values = []
+
+		for t in T:
+
+			data = path%(t)
+			data = load(data)
+
+			if data is None:
+				return
+
+			data = list(data.values())[-1]
+			data,basis = (data['data'],data['basis']) if isinstance(data,dict) else (data,None)
+
+			for k in K:
+
+				tmp = data
+				for i in range(1,k):
+					data = data*basis*tmp
+
+				value = data*basis
+				value = Trace(value)
+
+				for d in D:
+					d = 2**d
+					if d < t:
+						continue
+					for e in E:
+						options = dict(d=d,e=d**e if e>0 else -e)
+						values.append({'t':t,'k':k,'d':d,'e':e,'data':float(number(value,options))/factorial(t)})
+
+		data = values
+
+		return data
+
+	def number(expression,substitutions={},**kwargs):
+
+		def substitute(expression):
+			for substitution in substitutions:
+				expression = expression.subs({substitution:substitutions[substitution]})
+			return expression
+
+		number = simplify(substitute(expression))
+
+		return number
+
+	def permute(kwargs):
+		return [dict(zip(kwargs,values)) for values in product(*(kwargs[key] for key in kwargs))]
+
+	data = '%s/data.%%d.pkl'%(path)
+	figure = '%s/trace.%d.%d.%d.pdf'%(path,t,k,n)
+	mplstyle = 'plot.mplstyle'
+
+	data = process(data,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
+
+	attributes = {attr:sorted(set(i[attr] for i in data),key=lambda i:i if attr not in ['e'] else 100+i if i>0 else -i) for attr in ['t','k','e']}
+	size = prod(len(attributes[attr]) for attr in attributes)
+
+	with matplotlib.style.context(mplstyle):
+
+		fig,ax = plt.subplots()
+		obj = dict(fig=fig,ax=ax)
+
+		for index,attrs in enumerate(permute(attributes)):
+
+			indices = [i for i in data if all(i[attr]==attrs[attr] and type(i[attr])==type(attrs[attr]) for attr in attrs)]
+			indices = sorted(indices,key=lambda i:i['d'])
+
+			x = [i['d'] for i in indices]
+			y = [i['data'] for i in indices]
+
+			options = dict(
+				label='$%s$'%('~'.join([
+					'%d'%(attrs['t']),
+					'%d'%(attrs['k']),
+					'1' if attrs['e']==0 else
+					'd' if attrs['e']==1 else
+					'%s'%(-attrs['e']) if attrs['e']<0 else
+					'd^{%s}'%(attrs['e'] if isinstance(attrs['e'],int) else '%s/2'%(int(2*attrs['e'])))])),
+				color=getattr(plt.cm,'viridis')((attributes['e'].index(attrs['e'])/len(attributes['e']))),
+				marker={2:'o',3:'^',4:'s'}.get(attrs['t']),
+				linestyle={1:'-',2:':',3:'dashdot'}.get(attrs['k']),
+				markersize=8,linewidth=2.5,alpha=0.8,zorder=50,
+				)
+
+			ax.plot(x,y,**options)
+
+			if index == (size-1):
+
+				for t in attributes['t']:
+
+					options = dict(
+						label=None,
+						color='grey',
+						marker={2:'o',3:'^',4:'s'}.get(t),
+						linestyle='',
+						markersize=8,linewidth=2.5,alpha=0.8,zorder=100,
+						)
+
+					ax.plot([1.75,75],[1/factorial(t),1/factorial(t)],**options)
+
+
+					options = dict(
+						color='grey',
+						linestyle='--',
+						linewidth=2.5,alpha=0.8,zorder=100,
+						)
+
+					ax.hlines(y=1/factorial(t),xmin=min(x)*(-4),xmax=max(x)*1.5,**options)
+
+				options = dict(
+					s="$\\scriptstyle{\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{D}(d)}]}~\\Huge{/}~\\scriptstyle{\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{U}(d)}]}$",
+					color="grey"
+					)
+
+				ax.text(x=max(x)*0.535,y=1/factorial(t)*0.7,**options)
+
+
+			ax.set_ylabel(ylabel="$\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{C}(d,d_{\\mathcal{E}})}]~/~\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{U}(d)}]$")
+			ax.set_xlabel(xlabel="$d$")
+
+			ax.set_xscale(value="log",base=2)
+			ax.set_yscale(value="log",base=10)
+			ax.set_xlim(xmin=1.4,xmax=90)
+			ax.set_ylim(ymin=5e-3,ymax=2e0)
+			ax.set_xticks(ticks=[2**i for i in [1,2,3,4,5,6]])
+			ax.set_xticklabels(labels=['$2^{%d}$'%(i) if i>1 else '$2$' if i>0 else '$1$' for i in [1,2,3,4,5,6]])
+			ax.set_yticks(ticks=[1/factorial(i) for i in [*sorted(attributes['t'],reverse=True),1]])
+			ax.set_yticklabels(labels=['$1/%d!$'%(i) if i>1 else '$%d$'%(i) for i in [*sorted(attributes['t'],reverse=True),1]])
+
+			ax.grid(visible=True)
+
+			ax.legend(
+				title="$t~,k~,d_{\\mathcal{E}}$",
+				loc="lower left",
+				ncol=len(attributes['t'])*len(attributes['k']),
+				title_fontsize=22,
+				prop={"size":20},
+				markerscale=1,
+				handlelength=3
+			)
+
+			if index == (size-1):
+				fig.set_size_inches(w=20,h=12)
+				fig.subplots_adjust()
+				fig.tight_layout()
+				fig.savefig(fname=figure)
+
+	return
+
 def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
-	norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	# matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
-	matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	# norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
+
+	trace(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	return
 
