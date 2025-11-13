@@ -2,7 +2,7 @@
 
 import sys,os
 
-from sympy import Symbol,Matrix,Integer,simplify,log,LT,Poly,Add,Trace
+from sympy import Symbol,Integer,simplify,LT,Add,Trace
 from sympy.combinatorics.named_groups import SymmetricGroup
 
 import numpy as np
@@ -150,7 +150,7 @@ def matrix(path,t,k,n,boolean=None,verbose=None,**kwargs):
 			d = Symbol('d')
 			e = Symbol('e')
 
-			options = dict(substitutions={e:d**n})
+			options = dict(substitutions={e:d**n if n>=0 else -n})
 
 			data = data
 
@@ -344,11 +344,225 @@ def matrix(path,t,k,n,boolean=None,verbose=None,**kwargs):
 			mkdir(figure)
 			fig.subplots_adjust()
 			fig.savefig(figure)			
-		else:
-			plt.show()
 
 	return
 
+def array(path,t,k,n,boolean=None,verbose=None,**kwargs):
+
+	def process(data,checkpoint,t,k,n,boolean=None,verbose=None):
+
+		data,basis = (data['data'],data['basis']) if isinstance(data,dict) else (data,None)
+
+		shape = data.shape
+		default = -1
+
+		elements = group(t,sorting=True)
+		indices = order(elements,t)
+
+		def process(data,unique=None,index=None,indices=None):
+
+			d = Symbol('d')
+			e = Symbol('e')
+
+			options = dict(substitutions={e:d**n if n>=0 else -n})
+
+			data = data
+
+			if unique is not None:
+				return data,unique
+
+			if index is not None:
+				i,j = index
+			else:
+				i,j = 0,0
+
+			elements = [i for i in product(*(range(i) for i in shape))]
+			elements = elements[elements.index((i,j))-((i*j)>0):]
+
+			if index is None:
+
+				if k is not None and basis is not None:
+					tmp = data
+					for i in range(1,k):
+						data = data*basis*tmp
+
+				data = data*basis
+
+			for i,j in elements:
+
+				if data[i,j] not in [0,1]:
+					data[i,j] = number(data[i,j],**options)
+				elif data[i,j] in [1]:
+					data[i,j] = 0
+				elif data[i,j] in [0]:
+					data[i,j] = -1
+
+				if checkpoint:
+					tmp = {(i,j):data}
+					dump(checkpoint,tmp)
+
+				# log(i,j,data[i,j],verbose=verbose)
+
+			data = np.array(data).astype(int)
+
+			unique = np.unique(data[data>=0])
+
+			if indices is not None:
+				data = np.array([[data[i,j] for j in indices] for i in indices])
+
+			return data,unique
+
+
+		if checkpoint:
+
+			tmp = load(checkpoint)
+
+			if tmp is None:
+
+				index = None
+				data = data
+				unique = None
+
+			else:
+
+				if all(attr in tmp for attr in ['data','unique']):
+
+					index = None
+					data = tmp['data']
+					unique = tmp['unique']
+
+				else:
+
+					index = list(tmp.keys())[-1]
+					data = list(tmp.values())[-1]
+					unique = None
+
+		data,unique = process(data,unique,index=index,indices=indices)
+
+		if checkpoint:
+			tmp = {'data':data,'unique':unique}
+			dump(checkpoint,tmp)
+
+		return data,unique
+
+	def number(expression,substitutions={},**kwargs):
+
+		def substitute(expression):
+			substitutions.update({attr:
+				Integer(substitutions[attr])
+				for attr in substitutions
+				if isinstance(substitutions[attr],int)
+				})
+			expression = expression.subs(substitutions)
+			return expression
+
+		def args(expression):
+			while len(expression.args):
+				expression = expression.args[-1]
+			return expression
+
+		def leading(expression):
+			try:
+				expression = LT(expression)
+			except:
+				pass
+			return expression
+
+		def terms(expression):
+
+			expressions = [
+				(numerator,denominator)
+				for term in Add.make_args(expression)
+				for numerator,denominator in [term.as_numer_denom()]
+				]
+
+			if expression == 0:
+				return default
+
+			while expressions and expression:
+
+				expr = [
+					(leading(numerator),leading(denominator))
+					for numerator,denominator in expressions
+					]
+
+				expression = simplify(sum(numerator/denominator
+					for numerator,denominator in expr))
+
+				if expression == 0:
+					expressions = [(numerator - (denominator*num/den),denominator)
+						for (numerator,denominator),(num,den) in zip(expressions,expr)
+						]
+				else:
+					numerator,denominator = expression.as_numer_denom()
+					expression = leading(numerator)/leading(denominator)
+					expressions = None
+
+			return expression
+
+		default = -1
+
+		try:
+			expression = -args(terms(substitute(expression)))
+		except Exception as exception:
+			expression = default
+
+		return expression
+
+	data = '%s/data.%d.pkl'%(path,t)
+	figure = '%s/array.%d.%d.%d.pdf'%(path,t,k,n)
+	checkpoint = '%s/data.tmp.%d.%d.%d.pkl'%(path,t,k,n)
+	mplstyle = 'plot.mplstyle'
+
+	data = load(data)
+
+	if data is None:
+		return
+
+	i,j = list(data.keys())[-1]
+	data = list(data.values())[-1]
+
+	log(i,j,kwargs,verbose=verbose)
+
+	data,unique = process(data,checkpoint,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
+
+	l = len(unique)
+	L = 30
+
+	verbose = 1
+	log(data,verbose=verbose)
+
+	with matplotlib.style.context(mplstyle):
+
+		plt.close('all')
+		fig, ax = plt.subplots()
+		# cmap = matplotlib.colors.ListedColormap([plt.cm.viridis((i)/(L)) for i in range(l)])
+		cmap = matplotlib.colors.ListedColormap([
+				*[plt.cm.viridis(1.00*i/(0.8*L)) for i in range(0,10,1)],
+				*[plt.cm.viridis(1.00*10/(0.8*L) + i/(1.7*L)) for i in range(10,L,1)]
+				])
+		cmap.set_under('white')
+		cmap.set_over('white')
+		# plot = ax.imshow(data, cmap=cmap, vmin=0, vmax=l, aspect=1,interpolation=None, rasterized=True)
+		plot = ax.matshow(data, cmap=cmap, vmin=0, vmax=L,interpolation='none', aspect=1)
+		cbar = fig.colorbar(plot, orientation="vertical")
+		# cbar.set_ticks(ticks=[i+0.5 for i in range(l)])
+		# cbar.set_ticklabels(ticklabels=['$%d%s$'%(i,' ' if i<10 else '') for i in unique])
+		cbar.set_ticks(ticks=[i+0.5 for i in range(0,L,4)])
+		cbar.set_ticklabels(ticklabels=['$%d%s$'%(i,' ' if i<10 else '') for i in range(0,L,4)])
+		cbar.set_label(label="$l$",loc='center',rotation=90)
+		ax.set_aspect('equal')
+		ax.axis(True)
+		ax.set_xticks([])
+		ax.set_yticks([])
+		# ax.set_title(r'$t = %d ~,~ k = %d$'%(kwargs.get('t'),kwargs.get('k'))) if kwargs.get('t') is not None and kwargs.get('k') is not None else None
+
+		if figure is not None:
+			mkdir(figure)
+			fig.subplots_adjust()
+			fig.savefig(figure)
+
+	return
 
 def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
@@ -359,7 +573,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 		T = range(2,t+1)
 		K = [1,k]
-		N = range(n)
+		N = [n]
 
 		values = []
 
@@ -502,7 +716,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 				handlelength=3
 			)
 
-			if index == (size-1):
+			if index == (size-1) and figure is not None:
 				fig.set_size_inches(w=20,h=12)
 				fig.subplots_adjust()
 				fig.tight_layout()
@@ -520,7 +734,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 		T = range(2,t+1)
 		K = [1,k]
-		N = range(n)
+		N = [n]
 
 		values = []
 
@@ -663,7 +877,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 				handlelength=3
 			)
 
-			if index == (size-1):
+			if index == (size-1) and figure is not None:
 				fig.set_size_inches(w=20,h=12)
 				fig.subplots_adjust()
 				fig.tight_layout()
@@ -673,9 +887,11 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
-	# matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
-	# norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	array(path,t,k,n,boolean=None,verbose=None,**kwargs)
+
+	norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	trace(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
