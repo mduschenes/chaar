@@ -1,5 +1,1 @@
-**/scratch
-**/__pycache__
-test/**
-tmp/**
-makefile
+test
