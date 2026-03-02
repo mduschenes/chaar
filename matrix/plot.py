@@ -656,7 +656,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 				color=getattr(plt.cm,'viridis')((attributes['e'].index(attrs['e'])/len(attributes['e']))),
 				marker={2:'o',3:'^',4:'s'}.get(attrs['t']),
 				linestyle={1:'-',2:':',3:'dashdot'}.get(attrs['k']),
-				markersize=8,linewidth=2.5,alpha=0.8,zorder=50,
+				markersize=10,linewidth=4,alpha=0.8,zorder=50,
 				)
 
 			ax.plot(x,y,**options)
@@ -670,7 +670,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 						color='grey',
 						marker={2:'o',3:'^',4:'s'}.get(t),
 						linestyle='',
-						markersize=8,linewidth=2.5,alpha=0.8,zorder=100,
+						markersize=10,linewidth=4,alpha=0.8,zorder=100,
 						)
 
 					ax.plot([1.75,75],[1/factorial(t),1/factorial(t)],**options)
@@ -679,20 +679,21 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 					options = dict(
 						color='grey',
 						linestyle='--',
-						linewidth=2.5,alpha=0.8,zorder=100,
+						linewidth=4,alpha=0.8,zorder=100,
 						)
 
 					ax.hlines(y=1/factorial(t),xmin=min(x)*(-4),xmax=max(x)*1.5,**options)
 
 				options = dict(
 					s="$\\scriptstyle{||{\\Tau^{(t)}_{\\mathcal{D}(d)}}||^{2}}~\\Huge{/}~\\scriptstyle{||{\\Tau^{(t)}_{\\mathcal{U}(d)}}||^{2}}$",
-					color="grey"
+					color="grey",
+					fontsize=36,
 					)
 
-				ax.text(x=max(x)*0.535,y=1/factorial(t)*0.7,**options)
+				ax.text(x=max(x)*0.505,y=1/factorial(t)*0.7,**options)
 
 
-			ax.set_ylabel(ylabel="$\\norm{\\Tau^{(t)}_{\\mathcal{C}(d,d_{\\mathcal{E}})}}^{2}/\\norm{\\Tau^{(t)}_{\\mathcal{U}(d)}}^{2}$")
+			ax.set_ylabel(ylabel="$\\norm{\\Tau^{(t)}_{\\mathcal{C}(d,s)}}^{2}/\\norm{\\Tau^{(t)}_{\\mathcal{U}(d)}}^{2}$")
 			ax.set_xlabel(xlabel="$d$")
 
 			ax.set_xscale(value="log",base=2)
@@ -707,7 +708,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 			ax.grid(visible=True)
 
 			ax.legend(
-				title="$t~,k~,d_{\\mathcal{E}}$",
+				title="$t~,k~,s$",
 				loc="lower left",
 				ncol=len(attributes['t'])*len(attributes['k']),
 				title_fontsize=22,
@@ -817,7 +818,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 				color=getattr(plt.cm,'viridis')((attributes['e'].index(attrs['e'])/len(attributes['e']))),
 				marker={2:'o',3:'^',4:'s'}.get(attrs['t']),
 				linestyle={1:'-',2:':',3:'dashdot'}.get(attrs['k']),
-				markersize=8,linewidth=2.5,alpha=0.8,zorder=50,
+				markersize=10,linewidth=4,alpha=0.8,zorder=50,
 				)
 
 			ax.plot(x,y,**options)
@@ -831,7 +832,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 						color='grey',
 						marker={2:'o',3:'^',4:'s'}.get(t),
 						linestyle='',
-						markersize=8,linewidth=2.5,alpha=0.8,zorder=100,
+						markersize=10,linewidth=4,alpha=0.8,zorder=100,
 						)
 
 					ax.plot([1.75,75],[1/factorial(t),1/factorial(t)],**options)
@@ -840,20 +841,21 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 					options = dict(
 						color='grey',
 						linestyle='--',
-						linewidth=2.5,alpha=0.8,zorder=100,
+						linewidth=4,alpha=0.8,zorder=100,
 						)
 
 					ax.hlines(y=1/factorial(t),xmin=min(x)*(-4),xmax=max(x)*1.5,**options)
 
 				options = dict(
 					s="$\\scriptstyle{\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{D}(d)}]}~\\Huge{/}~\\scriptstyle{\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{U}(d)}]}$",
-					color="grey"
+					color="grey",
+					fontsize=36,
 					)
 
-				ax.text(x=max(x)*0.535,y=1/factorial(t)*0.7,**options)
+				ax.text(x=max(x)*0.505,y=1/factorial(t)*0.7,**options)
 
 
-			ax.set_ylabel(ylabel="$\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{C}(d,d_{\\mathcal{E}})}]~/~\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{U}(d)}]$")
+			ax.set_ylabel(ylabel="$\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{C}(d,s)}]~/~\\textrm{Tr}[\\Tau^{(t)}_{\\mathcal{U}(d)}]$")
 			ax.set_xlabel(xlabel="$d$")
 
 			ax.set_xscale(value="log",base=2)
@@ -868,7 +870,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 			ax.grid(visible=True)
 
 			ax.legend(
-				title="$t~,k~,d_{\\mathcal{E}}$",
+				title="$t~,k~,s$",
 				loc="lower left",
 				ncol=len(attributes['t'])*len(attributes['k']),
 				title_fontsize=22,
@@ -887,13 +889,13 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
-	matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	# matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
-	array(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	# array(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
-	trace(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	# trace(path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	return
 
