@@ -296,7 +296,7 @@ def matrix(path,t,k,n,boolean=None,verbose=None,**kwargs):
 		return expression
 
 	data = '%s/data.%d.pkl'%(path,t)
-	figure = '%s/plot.%d.%d.%d.pdf'%(path,t,k,n)
+	figure = '%s/plot.matrix.%d.%d.%d.pdf'%(path,t,k,n)
 	checkpoint = '%s/data.tmp.%d.%d.%d.pkl'%(path,t,k,n)
 	mplstyle = '%s/plot.mplstyle'%(path)
 
@@ -512,7 +512,7 @@ def array(path,t,k,n,boolean=None,verbose=None,**kwargs):
 		return expression
 
 	data = '%s/data.%d.pkl'%(path,t)
-	figure = '%s/array.%d.%d.%d.pdf'%(path,t,k,n)
+	figure = '%s/plot.array.%d.%d.%d.pdf'%(path,t,k,n)
 	checkpoint = '%s/data.tmp.%d.%d.%d.pkl'%(path,t,k,n)
 	mplstyle = '%s/plot.mplstyle'%(path)
 
@@ -626,7 +626,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 		return [dict(zip(kwargs,values)) for values in product(*(kwargs[key] for key in kwargs))]
 
 	data = '%s/data.%%d.pkl'%(path)
-	figure = '%s/norm.%d.%d.%d.pdf'%(path,t,k,n)
+	figure = '%s/plot.norm.%d.%d.%d.pdf'%(path,t,k,n)
 	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = process(data,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
@@ -788,7 +788,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 		return [dict(zip(kwargs,values)) for values in product(*(kwargs[key] for key in kwargs))]
 
 	data = '%s/data.%%d.pkl'%(path)
-	figure = '%s/trace.%d.%d.%d.pdf'%(path,t,k,n)
+	figure = '%s/plot.trace.%d.%d.%d.pdf'%(path,t,k,n)
 	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = process(data,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
@@ -891,12 +891,15 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 def plot(path,t,k,n,string=None,boolean=None,verbose=None,**kwargs):
 
-	strings = string.split(delim)
+	strings = string.split(delim) if isinstance(string,str) else string if isinstance(string,(list,tuple,dict)) else string if string is not None else []
 	funcs = {'matrix':matrix,'array':array,'norm':norm,'trace':trace}
 
 	for string in strings:
 		if string not in funcs:
 			continue
+
+		log(f't={t}\tk={k}\tn={n}\tstring={string}')
+
 		func = funcs[string](path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	return
