@@ -247,7 +247,7 @@ def mkdir(path):
 		os.makedirs(directory)
 	return
 
-def plot(path,t,d,boolean=None,verbose=None,**kwargs):
+def plot(path,t,d,string=None,boolean=None,verbose=None,**kwargs):
 
 	data = '%s/data.%d.%d.pkl'%(path,t,d)
 	figure = '%s/plot.%d.%d.pdf'%(path,t,d)
@@ -295,7 +295,7 @@ def plot(path,t,d,boolean=None,verbose=None,**kwargs):
 			fig.savefig(figure)
 	return
 
-def run(path,t,d,boolean=None,verbose=None,**kwargs):
+def run(path,t,d,string=None,boolean=None,verbose=None,**kwargs):
 
 	figure = '%s/plot.basis.%d.pdf'%(path,t)
 	mplstyle = 'plot.mplstyle'
@@ -361,15 +361,16 @@ def run(path,t,d,boolean=None,verbose=None,**kwargs):
 
 def main(*args,**kwargs):
 
-	path = str(args[0] if len(args)>0 else '.')	
+	path = str(args[0] if len(args)>0 else '.')
 	t = int(args[1] if len(args)>1 else 2)
 	d = int(args[2] if len(args)>2 else t)
+	string = str(args[3]) if len(args)>2 else None
 
 	boolean = 1
 	verbose = 1
 
-	run(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
-	plot(path=path,t=t,d=d,boolean=boolean,verbose=verbose)
+	run(path=path,t=t,d=d,string=string,boolean=boolean,verbose=verbose)
+	plot(path=path,t=t,d=d,string=string,boolean=boolean,verbose=verbose)
 
 	return
 

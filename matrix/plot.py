@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,format='%(message)s',stream=sys.stdout)
 log = lambda *message,verbose=True,**kwargs: logger.info('\t'.join(str(i) for i in message) if len(message)>1 else message[0] if len(message)>0 else "") if verbose else None
 
+delim = '.'
+
 def group(t,sorting=None):
 	G = SymmetricGroup(t)
 	if sorting:
@@ -296,7 +298,7 @@ def matrix(path,t,k,n,boolean=None,verbose=None,**kwargs):
 	data = '%s/data.%d.pkl'%(path,t)
 	figure = '%s/plot.%d.%d.%d.pdf'%(path,t,k,n)
 	checkpoint = '%s/data.tmp.%d.%d.%d.pkl'%(path,t,k,n)
-	mplstyle = 'plot.mplstyle'
+	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = load(data)
 
@@ -512,7 +514,7 @@ def array(path,t,k,n,boolean=None,verbose=None,**kwargs):
 	data = '%s/data.%d.pkl'%(path,t)
 	figure = '%s/array.%d.%d.%d.pdf'%(path,t,k,n)
 	checkpoint = '%s/data.tmp.%d.%d.%d.pkl'%(path,t,k,n)
-	mplstyle = 'plot.mplstyle'
+	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = load(data)
 
@@ -625,7 +627,7 @@ def norm(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 	data = '%s/data.%%d.pkl'%(path)
 	figure = '%s/norm.%d.%d.%d.pdf'%(path,t,k,n)
-	mplstyle = 'plot.mplstyle'
+	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = process(data,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
 
@@ -787,7 +789,7 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 	data = '%s/data.%%d.pkl'%(path)
 	figure = '%s/trace.%d.%d.%d.pdf'%(path,t,k,n)
-	mplstyle = 'plot.mplstyle'
+	mplstyle = '%s/plot.mplstyle'%(path)
 
 	data = process(data,t=t,k=k,n=n,boolean=boolean,verbose=verbose,**kwargs)
 
@@ -887,15 +889,15 @@ def trace(path,t,k,n,boolean=None,verbose=None,**kwargs):
 
 	return
 
-def plot(path,t,k,n,boolean=None,verbose=None,**kwargs):
+def plot(path,t,k,n,string=None,boolean=None,verbose=None,**kwargs):
 
-	# matrix(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	strings = string.split(delim)
+	funcs = {'matrix':matrix,'array':array,'norm':norm,'trace':trace}
 
-	# array(path,t,k,n,boolean=None,verbose=None,**kwargs)
-
-	norm(path,t,k,n,boolean=None,verbose=None,**kwargs)
-
-	# trace(path,t,k,n,boolean=None,verbose=None,**kwargs)
+	for string in strings:
+		if string not in funcs:
+			continue
+		func = funcs[string](path,t,k,n,boolean=None,verbose=None,**kwargs)
 
 	return
 
@@ -905,11 +907,12 @@ def main(*args,**kwargs):
 	t = int(args[1] if len(args)>1 else 2)
 	k = int(args[2] if len(args)>2 else 1)
 	n = int(args[3] if len(args)>3 else 2)
+	string = str(args[4]) if len(args)>4 else None
 
 	boolean = 1
 	verbose = 1
 
-	plot(path=path,t=t,k=k,n=n,boolean=boolean,verbose=verbose)
+	plot(path=path,t=t,k=k,n=n,string=string,boolean=boolean,verbose=verbose)
 
 	return
 

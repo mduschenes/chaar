@@ -5,17 +5,17 @@ This library is used in the preparation of the work:
 - *Moments of quantum channel ensembles*, Duschenes, M., Garcia-Martin, D., Holmes, Z., Cerezo, M., arXiv preprint arXiv:2511.12700 (2025), found on [arXiv:2511.12700](https://arxiv.org/abs/2511.12700).
 
 ## matrix
-- Compute `t`-order `k`-concatenated $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar ensemble localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$, norm $\lVert\tau_{dd_{\mathcal{E}}}^{(t)}\rVert$, and trace $\text{Tr}[\tau_{dd_{\mathcal{E}}}^{(t)}]$
+- Compute `t`-order `k`-concatenated $d,d_{\mathcal{E}}=d^{n}$-dimensional cHaar ensemble localized permutation transfer matrix coefficients $\tau_{dd_{\mathcal{E}}}^{(t)}([\sigma],[\pi])$, norm $\lVert\tau_{dd_{\mathcal{E}}}^{(t)}\rVert$, and trace $\text{Tr}[\tau_{dd_{\mathcal{E}}}^{(t)}]$, and plot `string`
 ```python
 	./main.py <path> <t>
-	./plot.py <path> <t> <k> <n>
+	./plot.py <path> <t> <k> <n> <string>
 ```
 
 ## basis
-- Compute `t`-order `d`-dimensional localized permutation basis change of basis matrix $\phi_{d}^{(t)}(\sigma,\pi)$
+- Compute `t`-order `d`-dimensional localized permutation basis change of basis matrix $\phi_{d}^{(t)}(\sigma,\pi)$, and plot `string`
 ```python
 	./main.py <path> <t> <d>
-	./plot.py <path> <t> <d>
+	./plot.py <path> <t> <d> <string>
 ```
 
 <!-- ## test
